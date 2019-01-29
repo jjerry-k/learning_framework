@@ -15,3 +15,6 @@
 ## Pytorch
 
 - 자료 : [Pytorch Tutorials](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html)
+
+
+$$ cost = {1\over m}\sum_{i=1}^m (H(x_i)-y_i)^2 $$
