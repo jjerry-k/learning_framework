@@ -41,7 +41,6 @@ class Model(nn.Module):
 
     def forward(self, X):
         X = self.linear(X)
-        X = torch.nn.Threshold(0, 0)(X)
         return X
 
 model = Model().to(device)
