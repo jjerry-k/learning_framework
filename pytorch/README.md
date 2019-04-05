@@ -12,5 +12,5 @@
 ## 03 Advance
 1. Advance Convolutional Neural Network
 2. Segmentation
-3. [Style Transfer]('./Style_Transfer)
+3. [Style Transfer]('./03_Advance/Style_Transfer)
 4. Generative Adversarial Network
