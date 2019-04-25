@@ -8,8 +8,7 @@ parser.add_argument("--steps", help="Steps of Training", type=int, default=2000)
 args = parser.parse_args()
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 import torch.optim as opti
 from torch.autograd import Variable
 

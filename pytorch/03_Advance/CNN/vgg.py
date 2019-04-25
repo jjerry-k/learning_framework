@@ -9,20 +9,22 @@ cfg = {
 }
 
 def Make_VGG(structure):
-    network = []
+    layers = []
     input_feature = 3
     for layer in structure:
         if layer == 'M':
-            network.append(nn.MaxPool2d(2, 2))
+            layers.append(nn.MaxPool2d(2, 2))
         else:
             conv = nn.Conv2d(input_feature, layer, 3, padding=1)
-            layers.append(conv, nn.ReLU(True))
+            layers.append(conv)
+            layers.append(nn.ReLU(True))
             input_feature = layer
-    return nn.Sequential(layers)
+    return nn.Sequential(*layers)
 
 class VGG(nn.Module):
-
-    def __init__(self, last_feature, num_class):
+    def __init__(self, cfg, num_class):
+        super(VGG, self).__init__()
+        self.vgg = Make_VGG(cfg)
         self.avgpool = nn.AdaptiveAvgPool2d((7,7))
         self.classifier = nn.Sequential(
             nn.Linear(512*7*7, 4096),
@@ -34,6 +36,7 @@ class VGG(nn.Module):
             nn.Linear(4096, num_class)
         )
     def forward(self, x):
+        x = self.vgg(x)
         x = self.avgpool(x)
         x = x.view(x.size[0], -1)
         x = self.classifier(x)

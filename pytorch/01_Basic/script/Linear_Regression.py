@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 x = np.random.normal(0.0, 0.55, (10000, 1))
 y = x * 0.1 + 0.3 + np.random.normal(0.0, 0.03, (10000,1))
                      
-plt.plot(x, y, 'r.')
-plt.show()
+#plt.plot(x, y, 'r.')
+#plt.show()
 
 x_data = Variable(torch.Tensor(x))
 y_data = Variable(torch.Tensor(y))
@@ -33,19 +33,20 @@ for epoch in range(500):
 
     loss = criterion(y_pred, y_data)
     
+    
     if epoch ==0 :
         print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
-        y_dis = model.forward(x_data).data.numpy()
-        plt.plot(x, y, 'r.')
-        plt.plot(x, y_dis, 'b.')
-        plt.show()
+        #y_dis = model.forward(x_data).data.numpy()
+        #plt.plot(x, y, 'r.')
+        #plt.plot(x, y_dis, 'b.')
+        #plt.show()
         
     elif (epoch+1) % 100 == 0 :
         print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
-        y_dis = model.forward(x_data).data.numpy()
-        plt.plot(x, y, 'r.')
-        plt.plot(x, y_dis, 'b.')
-        plt.show()
+        #y_dis = model.forward(x_data).data.numpy()
+        #plt.plot(x, y, 'r.')
+        #plt.plot(x, y_dis, 'b.')
+        #plt.show()
         
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()
