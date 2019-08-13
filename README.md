@@ -5,10 +5,6 @@
 - Google
 
 
-## Keras
-- Google
-
-
 ## Pytorch
 - Facebook
 
