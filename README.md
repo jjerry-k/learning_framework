@@ -4,17 +4,17 @@
 ---
 ## Framework list 
 
-### [Tensorflow](/tensorflow/README.md)
+### [Tensorflow](/tensorflow/)
 - 배포 : Google
 - 공식 홈페이지 : https://www.tensorflow.org
 - 주 사용 프레임워크
 
-### [Pytorch](/pytorch/README.md)
+### [Pytorch](/pytorch/)
 - 배포 : Facebook
 - 공식 홈페이지 : https://pytorch.org
 - 서브 프레임워크
 
-### [MXNet](/mxnet/README.md)
+### [MXNet](/mxnet/)
 - 배포 : Amazon
 - 공식 홈페이지 : https://mxnet.apache.org
 - 그냥...써보려고 함....
