@@ -12,7 +12,16 @@
 
 ## 03 Advance
 1. [Advance Convolutional Neural Network](./03_Advance/CNN)
+   1. VGG
+   2. ResNet
+   3. DenseNet
+   4. MobileNet
+   5. SqueezeNet
+   
 2. [Segmentation](./03_Advance/Segmentation)
+   1. Fully Convolutional Network
+   2. U-Net
+
 3. [Style Transfer](./03_Advance/Style_Transfer)
 4. [Generative Adversarial Network](./03_Advance/GAN)
    1. Vanilla GAN

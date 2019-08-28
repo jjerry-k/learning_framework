@@ -20,15 +20,11 @@ print("Test Data's Shape : ", test_x.shape, test_y.shape)
 # Network Building
 ## Using Sequential
 mlp = models.Sequential()
-mlp.add(layers.Dense(256, activation='relu', input_shape=(784,)))
-mlp.add(layers.Dense(128, activation='relu'))
 mlp.add(layers.Dense(10, activation='softmax'))
 
 ## Using Functional
 # _input = layers.Input(shape=(784, ))
-# layer = layers.Dense(256, activation='relu')(_input)
-# layer = layers.Dense(128, activation='relu')(layer)
-# layer = layers.Dense(10, activation='softmax')(layer)
+# layer = layers.Dense(10, activation='softmax')(_input)
 # mlp = models.Model(inputs=_input, outputs=layer)
 
 print("Network Built!")

@@ -40,7 +40,7 @@ cnn.add(layers.Dense(10, activation='softmax'))
 print("Network Built!")
 
 # Compiling
-cnn.compile(optimizer=optimizers.Adam(), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+cnn.compile(optimizer=optimizers.Adam(), loss=losses.sparse_categorical_crossentropy, metrics=['accuracy'])
 
 
 # Training

@@ -1,6 +1,7 @@
 # Learning Python A.I Framework
 
 - 본 Repository 는 지극히 개인적인 공부용이라 모든 코드들이 불친절하고 가독성이 좋지 않습니다.
+- 최대한 Python 스크립트와 jupyter notebook 둘 다 만들 생각...입니다.
 ---
 ## Framework list 
 

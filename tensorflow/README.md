@@ -13,12 +13,20 @@
 3. [Multi Class Classification](./nn/01/basic/Multi_Class_Classification)
 ### 02 Intermedicate
 1. [Multi Layer Network](./nn/02_Intermediate/Multi_Layer_Network)
+2. [Simple Convolutional Neural Network](./nn/02_Intermediate/Convolutional_Neural_Network)
 
 ## Using keras
 
 ### 01 Basic Useage
 1. [Linear Regression](./keras/01_Basic/Linear_Regression)
 2. [Logistic Regression](./keras/01_Basic/Logistic_Regression)
-
+3. [Multi Class Classification](./keras/01/basic/Multi_Class_Classification)
 ### 02 Intermedicate
-1. [Simple Convolutional Neural Network](./keras/02_Intermediate/Convolutional_Neural_Network)
+1. [Multi Layer Network](./keras/02_Intermediate/Multi_Layer_Network)
+2. [Simple Convolutional Neural Network](./keras/02_Intermediate/Convolutional_Neural_Network)
+### 03 Advance
+1. [Advance Convolutional Neural Network](./keras/03_Advance/CNN)
+   1. VGG
+2. [Segmentation](./keras/03_Advance/Segmentation)
+   1. Fully Convolutional Network
+   2. U-Net
