@@ -16,6 +16,6 @@
 - 서브 프레임워크
 
 ### [MXNet](/mxnet/)
-- 배포 : Amazon
+- 배포 : Apache
 - 공식 홈페이지 : https://mxnet.apache.org
 - 그냥...써보려고 함....
