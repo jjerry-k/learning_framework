@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, losses, utils, datasets
 
+tf.compat.v1.set_random_seed(777)
+
 print("Packge Loaded!")
 
 
