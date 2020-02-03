@@ -1,6 +1,7 @@
 # Learning Python A.I Framework
 
 - 본 Repository 는 지극히 개인적인 공부용이라 모든 코드들이 불친절하고 가독성이 좋지 않습니다.
+- 대부분 Network만 구성해볼뿐 학습을 해보진 않습니다. (물론 추후에 학습도 해볼 예정)
 
 ---
 ## Framework list 
@@ -28,48 +29,69 @@
 
 ### 01 Basic Usage
 - Linear Regression  
-tf.keras, tf.nn, PyTorch, MXNet Gluon, MXNet Module
+[tf.keras](https://github.com/jjerry-k/learning_framework/01_Basic/Linear_Regression/tf_keras.py), 
+[tf.nn](https://github.com/jjerry-k/learning_framework/01_Basic/Linear_Regression/tf_nn.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/01_Basic/Linear_Regression/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/01_Basic/Linear_Regression/MXNet_Gluon.py)
 
 - Logistic Regression  
-tf.keras, tf.nn, PyTorch, MXNet Gluon, MXNet Module
-
-- Multi Class Classification  
-tf.keras, tf.nn, PyTorch
+[tf.keras](https://github.com/jjerry-k/learning_framework/01_Basic/Logistic_Regression/tf_keras.py), 
+[tf.nn](https://github.com/jjerry-k/learning_framework/01_Basic/Logistic_Regression/tf_nn.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/01_Basic/Logistic_Regression/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/01_Basic/Logistic_Regression/MXNet_Gluon.py)
 
 ### 02 Intermediate
 - Multi Layer Network  
-tf.keras, tf.nn, PyTorch
+[tf.keras](https://github.com/jjerry-k/learning_framework/02_Intermediate/Multi_Layer_Neural_Network/tf_keras.py), 
+[tf.nn](https://github.com/jjerry-k/learning_framework/02_Intermediate/Multi_Layer_Neural_Network/tf_nn.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/02_Intermediate/Multi_Layer_Neural_Network/PyTorch.py)
 
 - Simple Convolutional Neural Network  
-tf.keras, tf.nn, PyTorch, MXNet Gluon
+[tf.keras](https://github.com/jjerry-k/learning_framework/02_Intermediate/Simple_Convolutional_Neural_Network/tf_keras.py), 
+[tf.nn](https://github.com/jjerry-k/learning_framework/02_Intermediate/Simple_Convolutional_Neural_Network/tf_nn.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/02_Intermediate/Simple_Convolutional_Neural_Network/PyTorch.py)
 
 ### 03 Advance
 #### Advance Convolutional Neural Network
-1. VGG  
-tf.keras, PyTorch
+1. VGGNet  
+[tf.keras](https://github.com/jjerry-k/learning_framework/03_Advance/CNN/VGGNet/tf_keras.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/CNN/VGGNet/PyTorch.py)
 
 2. ResNet  
-tf.keras, PyTorch
+[tf.keras](https://github.com/jjerry-k/learning_framework/03_Advance/CNN/ResNet/tf_keras.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/CNN/ResNet/PyTorch.py)
 
 3. DenseNet  
-PyTorch
-
-4. SqueezeNet  
-PyTorch
-
-5. Mobilenet  
-PyTorch
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/CNN/DenseNet/PyTorch.py)
 
 #### Segmentation
 1. U-Net  
-tf.keras, PyTorch
+[tf.keras](https://github.com/jjerry-k/learning_framework/03_Advance/Segmentation/U-Net/tf_keras.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/Segmentation/U-Net/PyTorch.py)
+
 
 #### Generative Adversarial Network
 1. Vanilla GAN  
-pytorch
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/GAN/Vanilla_GAN/PyTorch.py)
 2. LSGAN  
-pytorch
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/GAN/LSGAN/PyTorch.py)
 3. DCGAN  
-pytorch
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/GAN/DCGAN/PyTorch.py)
 4. CGAN  
-pytorch
+[PyTorch](https://github.com/jjerry-k/learning_framework/03_Advance/GAN/CGAN/PyTorch.py)
+
+
+### 04 Extra
+#### Super Resolution
+1. SRCNN  
+[PyTorch](https://github.com/jjerry-k/learning_framework/04_Extra/Super_Resolution/SRCNN/PyTorch.py)
+
+2. VDSR  
+[PyTorch](https://github.com/jjerry-k/learning_framework/04_Extra/Super_Resolution/VDSR/PyTorch.py)
+
+3. EDSR  
+[PyTorch](https://github.com/jjerry-k/learning_framework/04_Extra/Super_Resolution/EDSR/PyTorch.py)
+
+#### Style Transfer
+1. Neural Style Transfer  
+[PyTorch](https://github.com/jjerry-k/learning_framework/04_Extra/Style_Transfer/PyTroch/)
