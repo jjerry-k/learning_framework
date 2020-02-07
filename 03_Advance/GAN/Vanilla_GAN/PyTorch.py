@@ -1,3 +1,4 @@
+#%%
 import torch
 from torch import nn
 from torch import optim
@@ -10,14 +11,14 @@ from torchvision import transforms
 import os
 import numpy as np
 from matplotlib import pyplot as plt
-
+#%%
 def find_data_dir():
     data_path = 'data'
     while os.path.exists(data_path) != True:
         data_path = '../' + data_path
         
     return data_path
-
+#%%
 # MNIST dataset
 mnist_train = datasets.MNIST(root=find_data_dir(),
                           train=True,
@@ -25,12 +26,7 @@ mnist_train = datasets.MNIST(root=find_data_dir(),
                           download=True)
 print("Downloading Train Data Done ! ")
 
-mnist_test = datasets.MNIST(root=find_data_dir(),
-                         train=False,
-                         transform=transforms.ToTensor(),
-                         download=True)
-print("Downloading Test Data Done ! ")
-
+#%%
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # our model
@@ -72,7 +68,7 @@ g_optimizer = optim.Adam(G.parameters(), lr=0.0002)
 batch_size = 100
 
 data_iter = DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=1)
-
+#%%
 def plot_generator(num = 10):
     z = torch.randn(num, 100).to(device)
     
