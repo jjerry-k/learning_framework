@@ -62,8 +62,7 @@ print(imgs_val.shape, labs_val.shape)
 
 # %%
 # Build Networks
-def build_vgg(input_shape=(None, None, 3), num_layer=16, num_classes=1, name='vgg'):
-    num_layer_list = [11, 13, 16, 19]
+def build_vgg(input_shape=(None, None, 3), num_classes=1, num_layer=16, name='vgg'):
     
     blocks_dict = {
         11: [1, 1, 2, 2, 2],
@@ -74,7 +73,7 @@ def build_vgg(input_shape=(None, None, 3), num_layer=16, num_classes=1, name='vg
 
     num_channel_list = [64, 128, 256, 512, 512]
 
-    assert num_layer in  num_layer_list, "Number of layer must be in %s"%num_layer_list
+    assert num_layer in  blocks_dict.keys(), "Number of layer must be in %s"%blocks_dict.keys()
     
     last_act = 'sigmoid' if num_classes==1 else 'softmax'
     name = name+str(num_layer)
@@ -92,9 +91,9 @@ def build_vgg(input_shape=(None, None, 3), num_layer=16, num_classes=1, name='vg
     return model
 
 num_layer = 11
-input_shape = train_x.shape[1:]
+input_shape = imgs_tr.shape[1:]
 
-vgg = build_vgg(input_shape=input_shape, num_layer=num_layer, num_classes=num_classes)
+vgg = build_vgg(input_shape=input_shape, num_classes=num_classes, num_layer=num_layer, name='vgg')
 vgg.summary()
 
 loss = 'binary_crossentropy' if num_classes==1 else 'categorical_crossentropy'

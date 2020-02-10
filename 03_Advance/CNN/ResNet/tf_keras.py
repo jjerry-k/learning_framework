@@ -83,7 +83,7 @@ def residual_block(x, num_filters, strides=(1, 1), activation='relu', use_branch
     output = layers.Activation(activation, name=name+"_Act")(output)
     return output
 
-def build_resnet(num_layer = 50, input_shape=(None, None, 3, ), num_classes=10, name="Net"): 
+def build_resnet(input_shape=(None, None, 3, ), num_classes=10, num_layer = 50, name="Net"): 
     num_layer_list = [50, 101, 152]
     
     blocks_dict = {
@@ -117,7 +117,10 @@ def build_resnet(num_layer = 50, input_shape=(None, None, 3, ), num_classes=10, 
     x = layers.Dense(num_classes, activation=last_act, name=name+"_Output")(x)
     return models.Model(_input, x, name=name)
 
-resnet = build_resnet(50, input_shape, num_classes, name="ResNet")
+num_layer = 50
+input_shape = imgs_tr.shape[1:]
+
+resnet = build_resnet(input_shape=input_shape, num_classes=num_classes, num_layer=num_layer, name="ResNet")
 resnet.summary()
 
 
