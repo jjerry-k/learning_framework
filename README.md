@@ -64,6 +64,12 @@
 3. DenseNet  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py)
 
+4. Xception  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py)
+
+5. MobileNet
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py)
+
 #### Segmentation
 1. U-Net  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/Segmentation/U-Net/tf_keras.py), 
@@ -94,4 +100,4 @@
 
 #### Style Transfer
 1. Neural Style Transfer  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/PyTroch/)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/PyTroch/)Upda
