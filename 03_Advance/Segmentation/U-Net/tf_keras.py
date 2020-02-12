@@ -22,7 +22,7 @@ img_list = sorted(os.listdir(PATH_img))
 lab_list = sorted(os.listdir(PATH_lab))
 
 
-img_size = 224
+img_size = 128
 
 def read_img(path, img_size, mode='rgb'):
     mode_dict = {"rgb":cv.COLOR_BGR2RGB, 
@@ -120,7 +120,7 @@ def build_unet(input_shape= (None, None, 1), num_classes = 1, name='unet'):
     decoder1 = layers.Conv2D(64, 3, strides=1, padding='same', activation='relu', name=name+"_de1_conv1")(decoder1)
     decoder1 = layers.Conv2D(64, 3, strides=1, padding='same', activation='relu', name=name+"_de1_conv2")(decoder1)
 
-    output = layers.Conv2D(num_classes, 1, strides=1, padding='same', activation=last_act, name=name+"_prediction")(decoder1)
+    output = layers.Conv2D(num_classes, 1, strides=1, activation=last_act, name=name+"_prediction")(decoder1)
 
     return models.Model(inputs=input_layer, outputs=output, name=name)
 
