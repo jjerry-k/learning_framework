@@ -62,12 +62,13 @@
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/PyTorch.py)
 
 3. DenseNet  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py)
 
 4. Xception  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py)
 
-5. MobileNet
+5. MobileNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py)
 
 #### Segmentation
