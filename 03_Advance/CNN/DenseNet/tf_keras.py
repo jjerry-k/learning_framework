@@ -78,7 +78,7 @@ def Dense_Block(input, num_layer, name="Dense_Block"):
     return x
 
 def Transition_Layer(input, reduction, name="Transition_Layer"):
-    n_features = input.shape[-1]
+    n_features = int(input.shape[-1])
     x = layers.BatchNormalization(name=name+"_BN_1")(input)
     x = layers.ReLU(name=name+"_Act_1")(x)
     x = layers.Conv2D(int(n_features*reduction), 1, name=name+"_Conv_1")(x)
