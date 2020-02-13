@@ -57,18 +57,27 @@
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/VGGNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/VGGNet/PyTorch.py)
 
-2. ResNet  
+2. GoogLeNet  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/tf_keras.py)
+
+3. ResNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/PyTorch.py)
 
-3. DenseNet  
+4. Inception V2  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/tf_keras.py)
+
+4. Inception V3  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/tf_keras.py)
+
+6. DenseNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py)
 
-4. Xception  
+7. Xception  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py)
 
-5. MobileNet  
+8. MobileNet V1   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py)
 
 #### Segmentation
@@ -101,4 +110,4 @@
 
 #### Style Transfer
 1. Neural Style Transfer  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/PyTroch/)Upda
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/PyTroch/)
