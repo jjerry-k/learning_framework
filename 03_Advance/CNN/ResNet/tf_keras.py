@@ -84,7 +84,7 @@ def residual_block(x, num_filters, strides=(1, 1), activation='relu', use_branch
     return output
 
 def build_resnet(input_shape=(None, None, 3, ), num_classes=10, num_layer = 50, name="Net"): 
-    num_layer_list = [50, 101, 152]
+
     
     blocks_dict = {
         50: [3, 4, 6, 3],
@@ -94,7 +94,7 @@ def build_resnet(input_shape=(None, None, 3, ), num_classes=10, num_layer = 50, 
 
     num_channel_list = [256, 512, 1024, 2048]
     block_name = ['a', 'b', 'c', 'd']
-    assert num_layer in  num_layer_list, "Number of layer must be in %s"%num_layer_list
+    assert num_layer in  blocks_dict.keys(), "Number of layer must be in %s"%blocks_dict.keys()
     
     name = name+str(num_layer)
 
