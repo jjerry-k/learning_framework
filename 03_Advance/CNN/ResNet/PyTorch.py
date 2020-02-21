@@ -203,6 +203,6 @@ for epoch in range(epochs):
         val_loss /= total
         val_acc = (100 * correct / total)
 
-    print("Epoch : ", epoch+1, " Loss : ", (avg_loss/total_batch).item(), " Val Loss : ", val_loss, "Val Acc : ", val_acc)
+    print("Epoch : ", epoch+1, " Loss : ", (avg_loss/total_batch), " Val Loss : ", val_loss.item(), "Val Acc : ", val_acc)
 
 print("Training Done !")

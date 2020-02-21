@@ -64,50 +64,118 @@ print(imgs_val.shape, labs_val.shape)
 
 # %%
 # Build network
-class build_vgg(nn.Module):
-    def __init__(self, input_channel= 3, num_classes=1000, num_layer=16):
-        super(build_vgg, self).__init__()
-        
-        blocks_dict = {
-        11: [1, 1, 2, 2, 2],
-        13: [2, 2, 2, 2, 2], 
-        16: [2, 2, 3, 3, 3], 
-        19: [2, 2, 4, 4, 4]
-        }
 
-        num_channel_list = [64, 128, 256, 512, 512]
+class Conv_Block(nn.Module):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
+        super(Conv_Block, self).__init__()
 
-        assert num_layer in  blocks_dict.keys(), "Number of layer must be in %s"%blocks_dict.keys()
-
-        layer_list = []
-
-        input_features = input_channel
-        for idx, num_iter in enumerate(blocks_dict[num_layer]):
-            for jdx in range(num_iter):
-                layer_list.append(nn.Conv2d(input_features, num_channel_list[idx], 3, padding=1))
-                layer_list.append(nn.ReLU(True))
-                input_features = num_channel_list[idx]
-            layer_list.append(nn.MaxPool2d(2, 2))
-
-        self.vgg = nn.Sequential(*layer_list)
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.classifier = nn.Sequential(
-            nn.Linear(512, 512),
-            nn.ReLU(True),
-            nn.Linear(512, 512),
-            nn.ReLU(True),
-            nn.Linear(512, num_classes)
+        self.block = nn.Sequential(
+            nn.Conv2d(input_feature, output_feature, ksize, strides, padding),
+            nn.BatchNorm2d(output_feature),
+            nn.ReLU(True)
         )
+
     def forward(self, x):
-        x = self.vgg(x)
+        return self.block(x)
+
+class Depthwise_Separable_Block(nn.Module):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
+        super(Depthwise_Separable_Block, self).__init__()
+        
+        self.block = nn.Sequential(
+            nn.Conv2d(input_feature, input_feature, ksize, strides, padding, groups=input_feature),
+            nn.Conv2d(input_feature, output_feature, 1),
+            nn.BatchNorm2d(output_feature),
+            nn.ReLU(True)
+        )
+
+    def forward(self, x):
+        return self.block(x)
+
+class Residual_Block(nn.Module):
+    def __init__(self, input_feature, intermediate_feature, output_feature):
+        super(Residual_Block, self).__init__()
+        
+        self.block1 = nn.Sequential(
+            nn.Conv2d(input_feature, output_feature, 1, 2),
+            nn.BatchNorm2d(output_feature)
+        )
+        self.block2 = nn.Sequential(
+            Depthwise_Separable_Block(input_feature, intermediate_feature),
+            nn.BatchNorm2d(intermediate_feature),
+            nn.ReLU(True),
+
+            Depthwise_Separable_Block(intermediate_feature, output_feature),
+            nn.BatchNorm2d(output_feature),
+            
+            nn.MaxPool2d(3, 2, 1)
+        )
+
+    def forward(self, x):
+        return self.block1(x) + self.block2(x)
+
+class Middle_Flow(nn.Module):
+    def __init__(self, features):
+        super(Middle_Flow, self).__init__()
+
+        self.block = nn.Sequential(
+            nn.ReLU(True),
+            Depthwise_Separable_Block(features, features),
+            nn.BatchNorm2d(features),
+            
+            nn.ReLU(True),
+            Depthwise_Separable_Block(features, features),
+            nn.BatchNorm2d(features),
+
+            nn.ReLU(True),
+            Depthwise_Separable_Block(features, features),
+            nn.BatchNorm2d(features)
+        )
+
+    def forward(self, x):
+        return self.block(x) + x
+
+class Build_Xception(nn.Module):
+    def __init__(self, input_channel= 3, num_classes=1000):
+        super(Build_Xception, self).__init__()
+
+        self.stem = nn.Sequential(
+            Conv_Block(input_channel, 32, 3, 2, 1),
+            Conv_Block(32, 64)
+        )
+
+        self.entry_block = nn.Sequential(
+            Residual_Block(64, 128, 128),
+            Residual_Block(128, 256, 256),
+            Residual_Block(256, 728, 728)
+        )
+
+        self.middle_block = nn.Sequential(
+            *[Middle_Flow(728) for _ in range(8)]
+        )
+
+        self.exit_block = nn.Sequential(
+            Residual_Block(728, 728, 1024),
+            Depthwise_Separable_Block(1024, 1536),
+            Depthwise_Separable_Block(1536, 2048)
+        )
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.classifier = nn.Linear(2048, num_classes)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.entry_block(x)
+        x = self.middle_block(x)
+        x = self.exit_block(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
 
-vgg = build_vgg(input_channel=imgs_tr.shape[-1], num_classes=5, num_layer=16).to(device)
+xception = Build_Xception(input_channel=imgs_tr.shape[-1], num_classes=5).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(vgg.parameters(), lr=0.001)
+optimizer = optim.Adam(xception.parameters(), lr=0.001)
 
 # %%
 epochs=100
@@ -145,7 +213,7 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
 
-        y_pred = vgg.forward(X)
+        y_pred = xception.forward(X)
 
         loss = criterion(y_pred, Y)
         
@@ -154,7 +222,7 @@ for epoch in range(epochs):
         avg_loss += loss.item()
 
         if (i+1)%20 == 0 :
-            print("Epoch : ", epoch+1, "Iteration : ", i+1, " Loss : ", loss.item(), " Acc : ", acc)
+            print("Epoch : ", epoch+1, "Iteration : ", i+1, " Loss : ", loss.item())
 
     with torch.no_grad():
         val_loss = 0
@@ -163,7 +231,7 @@ for epoch in range(epochs):
         for (batch_img, batch_lab) in val_loader:
             X = batch_img.to(device)
             Y = batch_lab.to(device)
-            y_pred = vgg(X)
+            y_pred = xception(X)
             val_loss += criterion(y_pred, Y)
             _, predicted = torch.max(y_pred.data, 1)
             total += Y.size(0)

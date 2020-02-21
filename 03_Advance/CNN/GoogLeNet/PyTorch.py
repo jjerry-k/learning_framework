@@ -65,72 +65,120 @@ print(imgs_val.shape, labs_val.shape)
 # %%
 # Build network
 
-class ConvBlock(nn.Module):
-    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
-        super(ConvBlock, self).__init__()
-        self.block = nn.Sequential(
-            nn.Conv2d(input_feature, output_feature, ksize, strides, padding),
-            nn.BatchNorm2d(output_feature),
-            nn.ReLU(True)
-            )
+class Inception_Module(nn.Module):
+    def __init__(self, input_feature, 
+                filters_b1, filters_b2_1, filters_b2_2, 
+                filters_b3_1, filters_b3_2, filters_b4):
+        super(Inception_Module, self).__init__()
 
-    def forward(self, x):
-        return self.block(x)
+        self.branch1 = nn.Sequential(
+            nn.Conv2d(input_feature, filters_b1, 1), 
+            nn.ReLU(True))
 
-class Depthwise_Separable_Block(nn.Module):
-    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, depth_multiplier=1, alpha=1):
-        super(Depthwise_Separable_Block, self).__init__()
-        self.block = nn.Sequential(
-            nn.Conv2d(input_feature, input_feature, ksize, strides, padding, groups=input_feature),
-            nn.BatchNorm2d(input_feature),
+        self.branch2 = nn.Sequential(
+            nn.Conv2d(input_feature, filters_b2_1, 1),
             nn.ReLU(True),
-            nn.Conv2d(input_feature, int(output_feature*alpha), 1),
-            nn.BatchNorm2d(int(output_feature*alpha)),
+            nn.Conv2d(filters_b2_1, filters_b2_2, 3, 1, 1),
+            nn.ReLU(True)
+        )
+
+        self.branch3 = nn.Sequential(
+            nn.Conv2d(input_feature, filters_b3_1, 1),
+            nn.ReLU(True),
+            nn.Conv2d(filters_b3_1, filters_b3_2, 5, 1, 2),
+            nn.ReLU(True)
+        )
+
+        self.branch4 = nn.Sequential(
+            nn.MaxPool2d(3, 1, 1),
+            nn.Conv2d(input_feature, filters_b4, 1),
             nn.ReLU(True)
         )
 
     def forward(self, x):
+        return torch.cat([self.branch1(x), self.branch2(x), self.branch3(x), self.branch4(x)], dim=1)
+
+class Auxiliary_Classifier(nn.Module):
+    def __init__(self, input_feature, num_classes):
+        super(Auxiliary_Classifier, self).__init__()
+        self.block = nn.Sequential(
+            nn.AvgPool2d(5, 3, 1),
+            nn.Conv2d(input_feature, 128, 1),
+            nn.ReLU(True),
+            nn.AdaptiveAvgPool2d((1,1)),
+            nn.Flatten(),
+            nn.Linear(128, num_classes)
+        )
+    
+    def forward(self, x):
         return self.block(x)
-            
 
-class Build_MobileNet(nn.Sequential):
-    def __init__(self, input_channel=3, num_classes=1000, depth_multiplier=1, alpha=1):
-        super(Build_MobileNet, self).__init__()
-
-        self.Stem = ConvBlock(input_channel, 32, 3, 2, 1)
-
-        layer_list = []
-
-        layer_list.append(Depthwise_Separable_Block(32, 64, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(64, 128, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 128, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 256, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 256, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 512, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
         
-        for _ in range(5):
-            layer_list.append(Depthwise_Separable_Block(512, 512, depth_multiplier=depth_multiplier, alpha=alpha))
+class Build_GoogLeNet(nn.Module):
+    def __init__(self, input_channel=3, num_classes=1000):
+        super(Build_GoogLeNet, self).__init__()
+
+        self.Stem = nn.Sequential(
+            nn.ZeroPad2d(3),
+            nn.Conv2d(3, 64, 7, 2),
+            nn.ReLU(True),
+            nn.MaxPool2d(3, 2),
+            nn.LocalResponseNorm(64),
+            nn.Conv2d(64, 64, 1),
+            nn.ReLU(True),
+            nn.Conv2d(64, 192, 3, 1, 1),
+            nn.ReLU(True),
+            nn.LocalResponseNorm(192),
+            nn.MaxPool2d(3, 2)
+        )
         
-        layer_list.append(Depthwise_Separable_Block(512, 1024, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(1024, 1024, depth_multiplier=depth_multiplier, alpha=alpha))
-        
-        self.Main_Block = nn.Sequential(*layer_list)
+        self.pool = nn.MaxPool2d(3, 2)
+
+        self.inception1 = Inception_Module(192, 64, 96, 128, 16, 32, 32)
+        self.inception2 = Inception_Module(256, 128, 128, 192, 32, 96, 64)
+        self.inception3 = Inception_Module(480, 192, 96, 208, 16, 48, 64)
+        self.aux1 = Auxiliary_Classifier(512, num_classes)
+        self.inception4 = Inception_Module(512, 160, 112, 224, 24, 64, 64)
+        self.inception5 = Inception_Module(512, 128, 128, 256, 24, 64, 64)
+        self.inception6 = Inception_Module(512, 112, 144, 288, 32, 64, 64)
+        self.aux2 = Auxiliary_Classifier(528, num_classes)
+        self.inception7 = Inception_Module(528, 256, 160, 320, 32, 128, 128)
+        self.inception8 = Inception_Module(832, 256, 160, 320, 32, 128, 128)
+        self.inception9 = Inception_Module(832, 384, 192, 384, 48, 128, 128)
 
         self.Classifier = nn.Sequential(
             nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),
+            nn.Dropout(0.4),
             nn.Linear(1024, num_classes)
         )
         
     def forward(self, x):
         x = self.Stem(x)
-        x = self.Main_Block(x)
-        x = self.Classifier(x)
-        return x
+        x = self.inception1(x)
+        x = self.inception2(x)
+        x = self.pool(x)
+        
+        x = self.inception3(x)
+        aux1 = self.aux1(x)
 
-mobilenet = Build_MobileNet(input_channel=imgs_tr.shape[-1], num_classes=5, depth_multiplier=1, alpha=1).to(device)
+        x = self.inception4(x)
+        x = self.inception5(x)
+        x = self.inception6(x)
+        aux2 = self.aux2(x)
+        
+        x = self.inception7(x)
+        x = self.pool(x)
+
+        x = self.inception8(x)
+        x = self.inception9(x)
+
+        x = self.Classifier(x)
+        return x, aux1, aux2
+
+googlenet = Build_GoogLeNet(input_channel=imgs_tr.shape[-1], num_classes=5).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(mobilenet.parameters(), lr=0.001)
+optimizer = optim.Adam(googlenet.parameters(), lr=0.001)
 
 # %%
 epochs=100
@@ -168,9 +216,13 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
 
-        y_pred = mobilenet.forward(X)
+        y_pred = googlenet.forward(X)
 
-        loss = criterion(y_pred, Y)
+        loss_final = criterion(y_pred[0], Y)
+        loss_aux_1 = criterion(y_pred[1], Y)
+        loss_aux_2 = criterion(y_pred[2], Y)
+
+        loss = loss_final + 0.4*loss_aux_1 + 0.4*loss_aux_2
         
         loss.backward()
         optimizer.step()
@@ -186,9 +238,12 @@ for epoch in range(epochs):
         for (batch_img, batch_lab) in val_loader:
             X = batch_img.to(device)
             Y = batch_lab.to(device)
-            y_pred = mobilenet(X)
-            val_loss += criterion(y_pred, Y)
-            _, predicted = torch.max(y_pred.data, 1)
+            y_pred = googlenet(X)
+            val_loss_final = criterion(y_pred[0], Y)
+            val_loss_aux_1 = criterion(y_pred[1], Y)
+            val_loss_aux_2 = criterion(y_pred[2], Y)
+            val_loss += val_loss_final + 0.4*val_loss_aux_1 + 0.4*val_loss_aux_2
+            _, predicted = torch.max(y_pred[0].data, 1)
             total += Y.size(0)
             correct += (predicted == Y).sum().item()
         val_loss /= total

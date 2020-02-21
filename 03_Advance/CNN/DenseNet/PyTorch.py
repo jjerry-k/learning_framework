@@ -65,7 +65,7 @@ print(imgs_val.shape, labs_val.shape)
 # %%
 # Build network
 
-class DenseLayer(nn.Sequential):
+class DenseLayer(nn.Module):
     def __init__(self, input_feature, growth_rate):
         super(DenseLayer, self).__init__()
         self.block = nn.Sequential(
@@ -81,7 +81,7 @@ class DenseLayer(nn.Sequential):
         new_features = self.block(x)
         return torch.cat([x, new_features], dim=1)
 
-class DenseBlock(nn.Sequential):
+class DenseBlock(nn.Module):
     def __init__(self, num_layers, input_feature, growth_rate):
         super(DenseBlock, self).__init__()
 
@@ -94,7 +94,7 @@ class DenseBlock(nn.Sequential):
     def forward(self, x):
         return self.block(x)
             
-class Transition_layer(nn.Sequential):
+class Transition_layer(nn.Module):
     def __init__(self, input_feature, reduction):
         super(Transition_layer, self).__init__()
 
@@ -108,7 +108,7 @@ class Transition_layer(nn.Sequential):
     def forward(self, x):
         return self.block(x)
 
-class Build_Densenet(nn.Sequential):
+class Build_Densenet(nn.Module):
     def __init__(self, input_channel=3, num_classes=1000, num_blocks=121, growth_rate=32):
         super(Build_Densenet, self).__init__()
 
