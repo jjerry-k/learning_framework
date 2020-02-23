@@ -150,8 +150,8 @@ def grid_reduction_2(x, filters_b1_1, filters_b1_2,
     branch1 = layers.Conv2D(filters_b1_2, 3, strides=2, activation="relu", name=name+"_branch_1_3x3")(branch1)
     
     branch2 = layers.Conv2D(filters_b2_1, 1, activation="relu", name=name+"_branch_2_1x1")(x)
-    branch2 = layers.Conv2D(filters_b2_2, 3, padding="same", activation="relu", name=name+"_branch_2_1x7")(branch2)
-    branch2 = layers.Conv2D(filters_b2_3, 3, padding="same", activation="relu", name=name+"_branch_2_7x1")(branch2)
+    branch2 = layers.Conv2D(filters_b2_2, (1, 7), padding="same", activation="relu", name=name+"_branch_2_1x7")(branch2)
+    branch2 = layers.Conv2D(filters_b2_3, (7, 1), padding="same", activation="relu", name=name+"_branch_2_7x1")(branch2)
     branch2 = layers.Conv2D(filters_b2_4, 3, strides=2, activation="relu", name=name+"_branch_2_3x3")(branch2)
     
     branch3 = layers.MaxPool2D(pool_size=3, strides=2, name=name+"_branch_3_Pool")(x)
@@ -175,7 +175,7 @@ def build_inceptionv3(input_shape=(None, None, 3), num_classes=1, name="inceptio
 
     x = layers.Conv2D(32, 3, strides=2, activation="relu", name=name+"_Conv_1")(input)
     x = layers.Conv2D(32, 3, activation="relu", name=name+"_Conv_2")(x)
-    x = layers.Conv2D(64, 3, strides=1, padding="same", activation="relu", name=name+"_Conv_3")(x)
+    x = layers.Conv2D(64, 3, padding="same", activation="relu", name=name+"_Conv_3")(x)
     
     x = layers.MaxPool2D(pool_size=3, strides=2, name=name+"_Pool_1")(x)
     x = layers.Conv2D(80, 1, activation="relu", name=name+"_Conv_4")(x)

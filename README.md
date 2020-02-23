@@ -67,10 +67,11 @@
 
 4. Inception V2  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/tf_keras.py), 
-[tf.PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/PyTorch.py)
 
 5. Inception V3  
-[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/tf_keras.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/tf_keras.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/PyTorch.py)
 
 6. DenseNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
