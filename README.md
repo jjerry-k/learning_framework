@@ -97,11 +97,16 @@
 
 #### Generative Adversarial Network
 1. Vanilla GAN  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/Vanilla_GAN/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/Vanilla_GAN/PyTorch.py)
+
 2. LSGAN  
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/LSGAN/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/LSGAN/PyTorch.py)
+
 3. DCGAN  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/PyTorch.py)
+
 4. CGAN  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/PyTorch.py)
 
