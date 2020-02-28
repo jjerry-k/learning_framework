@@ -56,10 +56,10 @@ class Generator(nn.Module):
         
                     
     def forward(self, X):
-        X = F.leaky_relu(self.bnorm1(self.deconv1(X)), negative_slope=0.003)
-        X = F.leaky_relu(self.bnorm2(self.deconv2(X)), negative_slope=0.003)
-        X = F.leaky_relu(self.bnorm3(self.deconv3(X)), negative_slope=0.003)
-        X = torch.sigmoid(self.deconv4(X), negative_slope=0.003)
+        X = F.relu(self.bnorm1(self.deconv1(X)))
+        X = F.relu(self.bnorm2(self.deconv2(X)))
+        X = F.relu(self.bnorm3(self.deconv3(X)))
+        X = F.tanh(self.deconv4(X))
         return X
     
 class Discriminator(nn.Module):
