@@ -61,76 +61,143 @@ print("Validation labels : %d"%(len(labs_val)))
 print(imgs_tr.shape, labs_tr.shape)
 print(imgs_val.shape, labs_val.shape)
 
+
 # %%
 # Build network
 
 class Conv_Block(nn.Module):
-    '''(Conv, ReLU) * 2'''
-    def __init__(self, in_ch, out_ch, pool=None):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
         super(Conv_Block, self).__init__()
-        layers = [nn.Conv2d(in_ch, out_ch, 3, padding=1),
-                  nn.ReLU(inplace=True),
-                  nn.Conv2d(out_ch, out_ch, 3, padding=1),
-                  nn.ReLU(inplace=True)]
-        
-        if pool:
-            layers.insert(0, nn.MaxPool2d(2, 2))
-        
-        self.conv = nn.Sequential(*layers)
-            
+
+        self.block = nn.Sequential(
+            nn.Conv2d(input_feature, output_feature, ksize, strides, padding),
+            nn.BatchNorm2d(output_feature),
+            nn.ReLU(True)
+        )
 
     def forward(self, x):
-        x = self.conv(x)
-        return x
-
+        return self.block(x)
 
 class Upconv_Block(nn.Module):
-    def __init__(self, in_ch, out_ch):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
         super(Upconv_Block, self).__init__()
 
-        self.upconv = nn.ConvTranspose2d(in_ch, in_ch//2, 2, stride=2)
-        
-        self.conv = Conv_Block(in_ch, out_ch)
+        self.block = nn.Sequential(
+            nn.ConvTranspose2d(input_feature, output_feature, ksize, strides, padding),
+            nn.BatchNorm2d(output_feature),
+            nn.ReLU(True)
+        )
 
-    def forward(self, x1, x2):
-        # x1 : unpooled feature
-        # x2 : encoder feature
-        x1 = self.upconv(x1)
-        x1 = nn.UpsamplingBilinear2d(x2.size()[2:])(x1)
-        x = torch.cat([x2, x1], dim=1)
-        x = self.conv(x)
-        return x
-
-class Build_UNet(nn.Module):
-    def __init__(self, input_channel=3, num_classes=5):
-        super(Build_UNet, self).__init__()
-        self.conv1 = Conv_Block(input_channel, 64)
-        self.conv2 = Conv_Block(64, 128, pool=True)
-        self.conv3 = Conv_Block(128, 256, pool=True)
-        self.conv4 = Conv_Block(256, 512, pool=True)
-        self.conv5 = Conv_Block(512, 1024, pool=True)
-        
-        self.unconv4 = Upconv_Block(1024, 512)
-        self.unconv3 = Upconv_Block(512, 256)
-        self.unconv2 = Upconv_Block(256, 128)
-        self.unconv1 = Upconv_Block(128, 64)
-        
-        self.prediction = nn.Conv2d(64, num_classes, 1)
-        
     def forward(self, x):
-        en1 = self.conv1(x) #/2
-        en2 = self.conv2(en1) #/4
-        en3 = self.conv3(en2) #/8
-        en4 = self.conv4(en3) #/16
-        en5 = self.conv5(en4) 
-        
-        de4 = self.unconv4(en5, en4) # /8
-        de3 = self.unconv3(de4, en3) # /4
-        de2 = self.unconv2(de3, en2) # /2
-        de1 = self.unconv1(de2, en1) # /1
-        
-        output = self.prediction(de1)
-        return output
+        return self.block(x)
+
+class Build_DeconvNet(nn.Module):
+    """
+    Input size : 224 x 224
+    """
+    def __init__(self, input_channel= 3, num_classes=1000):
+        super(Build_DeconvNet, self).__init__()
+
+        self.en_block_1 = nn.Sequential(
+            Conv_Block(input_channel, 64, 3, 1, 1),
+            Conv_Block(64, 64, 3, 1, 1)
+        )
+
+        self.en_block_2 = nn.Sequential(
+            Conv_Block(64, 128, 3, 1, 1),
+            Conv_Block(128, 128, 3, 1, 1)
+        )
+
+        self.en_block_3 = nn.Sequential(
+            Conv_Block(128, 256, 3, 1, 1),
+            Conv_Block(256, 256, 3, 1, 1),
+            Conv_Block(256, 256, 3, 1, 1)
+        )
+
+        self.en_block_4 = nn.Sequential(
+            Conv_Block(256, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1)
+        )
+
+        self.en_block_5 = nn.Sequential(
+            Conv_Block(512, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1)
+        )
+
+        self.en_block_5 = nn.Sequential(
+            Conv_Block(512, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1),
+            Conv_Block(512, 512, 3, 1, 1)
+        )
+
+        self.fc_block = nn.Sequential(
+            Conv_Block(512, 4096, 7, 1, 0),
+            Conv_Block(4096, 4096, 1, 1, 0),
+            Upconv_Block(4096, 512, 7, 1, 0)
+        )
+
+        self.de_block_5 = nn.Sequential(
+            Upconv_Block(512, 512, 3, 1, 1),
+            Upconv_Block(512, 512, 3, 1, 1),
+            Upconv_Block(512, 512, 3, 1, 1)
+        )
+
+        self.de_block_4 = nn.Sequential(
+            Upconv_Block(512, 512, 3, 1, 1),
+            Upconv_Block(512, 512, 3, 1, 1),
+            Upconv_Block(512, 256, 3, 1, 1)
+        )
+
+        self.de_block_3 = nn.Sequential(
+            Upconv_Block(256, 256, 3, 1, 1),
+            Upconv_Block(256, 256, 3, 1, 1),
+            Upconv_Block(256, 128, 3, 1, 1)
+        )
+
+        self.de_block_2 = nn.Sequential(
+            Upconv_Block(128, 128, 3, 1, 1),
+            Upconv_Block(128, 64, 3, 1, 1)
+        )
+
+        self.de_block_1 = nn.Sequential(
+            Upconv_Block(64, 64, 3, 1, 1),
+            Upconv_Block(64, 64, 3, 1, 1)
+        )
+
+        self.classification = nn.Conv2d(64, num_classes, 1)
+
+        self.pool = nn.MaxPool2d(2, 2, return_indices=True)
+
+        self.unpool = nn.MaxUnpool2d(2, 2)
+
+    def forward(self, x):
+
+        x = self.en_block_1(x)
+        x, idx_1 = self.pool(x)
+        x = self.en_block_2(x)
+        x, idx_2 = self.pool(x)
+        x = self.en_block_3(x)
+        x, idx_3 = self.pool(x)
+        x = self.en_block_4(x)
+        x, idx_4 = self.pool(x)
+        x = self.en_block_5(x)
+        x, idx_5 = self.pool(x)
+        x = self.fc_block(x)
+        x = self.unpool(x, idx_5)
+        x = self.de_block_5(x)
+        x = self.unpool(x, idx_4)
+        x = self.de_block_4(x)
+        x = self.unpool(x, idx_3)
+        x = self.de_block_3(x)
+        x = self.unpool(x, idx_2)
+        x = self.de_block_2(x)
+        x = self.unpool(x, idx_1)
+        x = self.de_block_1(x)
+        x = self.classification(x)
+
+        return x
 
 class CrossEntropyLoss2d(nn.Module):
     def __init__(self, weight=None, size_average=True):
@@ -141,9 +208,9 @@ class CrossEntropyLoss2d(nn.Module):
         return self.nll_loss(nn.functional.log_softmax(inputs, dim=1), targets)
 
 num_classes = 2
-unet = Build_UNet(input_channel=imgs_tr.shape[-1], num_classes=num_classes).to(device)
+deconvnet = Build_DeconvNet(input_channel=imgs_tr.shape[-1], num_classes=num_classes).to(device)
 criterion = CrossEntropyLoss2d()
-optimizer = optim.Adam(unet.parameters(), lr=0.001)    
+optimizer = optim.Adam(deconvnet.parameters(), lr=0.001)
 
 # %%
 epochs=100
@@ -181,7 +248,7 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
 
-        y_pred = unet.forward(X)
+        y_pred = deconvnet.forward(X)
 
         loss = criterion(y_pred, Y)
         
@@ -199,7 +266,7 @@ for epoch in range(epochs):
         for (batch_img, batch_lab) in val_loader:
             X = batch_img.to(device)
             Y = batch_lab.to(device)
-            y_pred = unet(X)
+            y_pred = deconvnet(X)
             val_loss += criterion(y_pred, Y)
             _, predicted = torch.max(y_pred.data, 1)
             total += Y.size(0)

@@ -111,7 +111,7 @@ class build_resnet(nn.Module):
             nn.Conv2d(input_channel, 64, 7, 2),
             nn.BatchNorm2d(64),
             nn.ReLU(True),
-            nn.MaxPool2d(2, 2)
+            nn.MaxPool2d(3, 2, 1)
         )
 
         layer_list = []
