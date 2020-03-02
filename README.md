@@ -44,12 +44,14 @@
 - Multi Layer Network  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Multi_Layer_Neural_Network/tf_keras.py), 
 [tf.nn](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Multi_Layer_Neural_Network/tf_nn.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Multi_Layer_Neural_Network/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Multi_Layer_Neural_Network/PyTorch.py) 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Multi_Layer_Neural_Network/MXNet_Gluon.py)
 
 - Simple Convolutional Neural Network  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Simple_Convolutional_Neural_Network/tf_keras.py), 
 [tf.nn](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Simple_Convolutional_Neural_Network/tf_nn.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Simple_Convolutional_Neural_Network/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Simple_Convolutional_Neural_Network/PyTorch.py) 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/02_Intermediate/Simple_Convolutional_Neural_Network/MXNet_Gluon.py)
 
 ### 03 Advance
 #### Advance Convolutional Neural Network
