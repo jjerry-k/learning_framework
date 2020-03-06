@@ -146,7 +146,7 @@ class Build_GoogLeNet(nn.Module):
         self.inception8 = Inception_Module(832, 256, 160, 320, 32, 128, 128)
         self.inception9 = Inception_Module(832, 384, 192, 384, 48, 128, 128)
 
-        self.Classifier = nn.Sequential(
+        self.classifier = nn.Sequential(
             nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),
             nn.Dropout(0.4),
@@ -173,7 +173,7 @@ class Build_GoogLeNet(nn.Module):
         x = self.inception8(x)
         x = self.inception9(x)
 
-        x = self.Classifier(x)
+        x = self.classifier(x)
         return x, aux1, aux2
 
 googlenet = Build_GoogLeNet(input_channel=imgs_tr.shape[-1], num_classes=5).to(device)

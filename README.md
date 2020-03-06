@@ -62,11 +62,12 @@
 
 2. GoogLeNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/MXNet_Gluon.py)
 
 3. ResNet  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/PyTorch.py), 
 [MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/MXNet_Gluon.py)
 
 4. Inception V2  
