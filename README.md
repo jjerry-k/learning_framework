@@ -55,49 +55,53 @@
 
 ### 03 Advance
 #### Advance Convolutional Neural Network
-1. VGGNet  
+1. VGGNet  (https://arxiv.org/abs/1409.1556)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/VGGNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/VGGNet/PyTorch.py), 
 [MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/VGGNet/MXNet_Gluon.py)
 
-2. GoogLeNet  
+2. GoogLeNet (https://arxiv.org/abs/1409.4842)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/PyTorch.py), 
 [MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/GoogLeNet/MXNet_Gluon.py)
 
-3. ResNet  
+3. ResNet (https://arxiv.org/abs/1512.03385)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/PyTorch.py), 
 [MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/ResNet/MXNet_Gluon.py)
 
-4. Inception V2  
+4. Inception V2 (https://arxiv.org/abs/1512.00567)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV2/PyTorch.py)
 
-5. Inception V3  
+5. Inception V3 (https://arxiv.org/abs/1512.00567)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/PyTorch.py)
 
-6. DenseNet  
+6. DenseNet (https://arxiv.org/abs/1608.06993)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py)
 
-7. Xception  
+7. Xception (https://arxiv.org/abs/1610.02357)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/PyTorch.py)
 
-8. MobileNet V1   
+8. MobileNet V1 (https://arxiv.org/abs/1704.04861)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/PyTorch.py)
 
-9. MobileNet V2   
+9. MobileNet V2 (https://arxiv.org/abs/1801.04381)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/PyTorch.py)
 
 #### Segmentation
-1. U-Net  
+1. DeconvNet (http://cvlab.postech.ac.kr/research/deconvnet/)  
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/Segmentation/DeconvNet/PyTorch.py)
+
+2. U-Net (https://arxiv.org/abs/1505.04597)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/Segmentation/U-Net/tf_keras.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/Segmentation/U-Net/PyTorch.py)
+
 
 
 #### Generative Adversarial Network
