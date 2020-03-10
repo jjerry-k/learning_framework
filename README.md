@@ -80,7 +80,8 @@
 
 6. DenseNet (https://arxiv.org/abs/1608.06993)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/MXNet_Gluon.py)
 
 7. Xception (https://arxiv.org/abs/1610.02357)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py), 
@@ -89,7 +90,8 @@
 
 8. MobileNet V1 (https://arxiv.org/abs/1704.04861)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/MXNet_Gluon.py)
 
 9. MobileNet V2 (https://arxiv.org/abs/1801.04381)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/tf_keras.py), 

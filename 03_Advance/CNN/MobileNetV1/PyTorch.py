@@ -78,7 +78,7 @@ class ConvBlock(nn.Module):
         return self.block(x)
 
 class Depthwise_Separable_Block(nn.Module):
-    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, depth_multiplier=1, alpha=1):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, alpha=1):
         super(Depthwise_Separable_Block, self).__init__()
         self.block = nn.Sequential(
             nn.Conv2d(input_feature, input_feature, ksize, strides, padding, groups=input_feature),
@@ -94,25 +94,25 @@ class Depthwise_Separable_Block(nn.Module):
             
 
 class Build_MobileNet(nn.Sequential):
-    def __init__(self, input_channel=3, num_classes=1000, depth_multiplier=1, alpha=1):
+    def __init__(self, input_channel=3, num_classes=1000, alpha=1):
         super(Build_MobileNet, self).__init__()
 
         self.Stem = ConvBlock(input_channel, 32, 3, 2, 1)
 
         layer_list = []
 
-        layer_list.append(Depthwise_Separable_Block(32, 64, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(64, 128, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 128, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 256, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 256, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 512, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(32, 64, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(64, 128, strides=2, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(128, 128, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(128, 256, strides=2, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(256, 256, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(256, 512, strides=2, alpha=alpha))
         
         for _ in range(5):
-            layer_list.append(Depthwise_Separable_Block(512, 512, depth_multiplier=depth_multiplier, alpha=alpha))
+            layer_list.append(Depthwise_Separable_Block(512, 512, alpha=alpha))
         
-        layer_list.append(Depthwise_Separable_Block(512, 1024, strides=2, depth_multiplier=depth_multiplier, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(1024, 1024, depth_multiplier=depth_multiplier, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(512, 1024, strides=2, alpha=alpha))
+        layer_list.append(Depthwise_Separable_Block(1024, 1024, alpha=alpha))
         
         self.Main_Block = nn.Sequential(*layer_list)
 
@@ -128,7 +128,7 @@ class Build_MobileNet(nn.Sequential):
         x = self.Classifier(x)
         return x
 
-mobilenet = Build_MobileNet(input_channel=imgs_tr.shape[-1], num_classes=5, depth_multiplier=1, alpha=1).to(device)
+mobilenet = Build_MobileNet(input_channel=imgs_tr.shape[-1], num_classes=5, alpha=1).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(mobilenet.parameters(), lr=0.001)
 
