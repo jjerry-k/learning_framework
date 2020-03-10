@@ -84,7 +84,8 @@
 
 7. Xception (https://arxiv.org/abs/1610.02357)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/Xception/MXNet_Gluon.py)
 
 8. MobileNet V1 (https://arxiv.org/abs/1704.04861)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV1/tf_keras.py), 
