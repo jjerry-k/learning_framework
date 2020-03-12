@@ -95,7 +95,8 @@
 
 9. MobileNet V2 (https://arxiv.org/abs/1801.04381)   
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV2/MXNet_Gluon.py)
 
 #### Segmentation
 1. DeconvNet (http://cvlab.postech.ac.kr/research/deconvnet/)  
