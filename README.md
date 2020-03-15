@@ -77,7 +77,8 @@
 
 5. Inception V3 (https://arxiv.org/abs/1512.00567)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/tf_keras.py), 
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/PyTorch.py)
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/PyTorch.py), 
+[MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/InceptionV3/MXNet_Gluon.py)
 
 6. DenseNet (https://arxiv.org/abs/1608.06993)  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/DenseNet/tf_keras.py), 
