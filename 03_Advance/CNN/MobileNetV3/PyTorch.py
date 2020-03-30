@@ -65,61 +65,132 @@ print(imgs_val.shape, labs_val.shape)
 # %%
 # Build network
 
+class Hard_Sigmoid(nn.Module):
+    def __init__(self, inplace=False):
+        super(Hard_Sigmoid, self).__init__()
+        self.inplace = inplace
+
+    def forward(self, x):
+        return torch.max(torch.zeros_like(x), torch.min(torch.ones_like(x), x * 0.2 + 0.5))
+
+class Hard_Swish(nn.Module):
+    def __init__(self, inplace=False):
+        super(Hard_Swish, self).__init__()
+        self.inplace = inplace
+
+    def forward(self, x):
+        return x * F.relu6(x + 3., inplace=self.inplace) / 6.
+
 class ConvBlock(nn.Module):
-    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, use_hs=True):
         super(ConvBlock, self).__init__()
+        Act = Hard_Swish if use_hs else nn.ReLU6
         self.block = nn.Sequential(
             nn.Conv2d(input_feature, output_feature, ksize, strides, padding),
             nn.BatchNorm2d(output_feature),
-            nn.ReLU(True)
+            Act(True)
             )
 
     def forward(self, x):
         return self.block(x)
 
 class Depthwise_Separable_Block(nn.Module):
-    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, alpha=1):
+    def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, alpha=1, use_se=True, use_hs=True):
         super(Depthwise_Separable_Block, self).__init__()
-        self.block = nn.Sequential(
+        
+        self.use_se = use_se
+
+        Act = Hard_Swish if use_hs else nn.ReLU6
+
+        self.depthwise = nn.Sequential(
             nn.Conv2d(input_feature, input_feature, ksize, strides, padding, groups=input_feature),
             nn.BatchNorm2d(input_feature),
-            nn.ReLU(True),
-            nn.Conv2d(input_feature, int(output_feature*alpha), 1),
-            nn.BatchNorm2d(int(output_feature*alpha)),
-            nn.ReLU(True)
+            Act(True)
         )
 
+        self.pointhwise = nn.Sequential(
+            nn.Conv2d(input_feature, int(output_feature*alpha), 1),
+            nn.BatchNorm2d(int(output_feature*alpha)),
+            Act(True)
+        )
+
+        if use_se:
+            self.se = nn.Sequential(
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Conv2d(input_feature, input_feature, 1, 1),
+                nn.ReLU(True),
+                nn.Conv2d(input_feature, input_feature, 1, 1),
+                Hard_Sigmoid(True)
+            )
+
     def forward(self, x):
-        return self.block(x)
+        out = self.depthwise(x)
+        if self.use_se:
+            out = out * self.se(out)
+        out = self.pointhwise(x)
+        return out
             
+class Inverted_Residual_Block(nn.Module):
+    def __init__(self, input_feature, expansion, output_feature, strides=1, alpha=1, use_se=True, use_hs=True):
+        super(Inverted_Residual_Block, self).__init__()
+        
+        self.stride = strides
 
-class Build_MobileNet(nn.Sequential):
+        self.intermediate_featrue = int(input_feature*expansion)
+        
+        self.output_feature = output_feature
+
+        self.alpha = alpha
+        
+        self.block = nn.Sequential(
+            ConvBlock(input_feature, self.intermediate_featrue, 1, 1, 0, use_hs),
+            Depthwise_Separable_Block(self.intermediate_featrue, self.output_feature, 3, strides, 1, self.alpha, use_se, use_hs)
+        )
+    
+    def forward(self, x):
+        output = self.block(x)
+        if self.stride==1 and self.intermediate_featrue == int(self.output_feature*self.alpha):
+            return x + output
+        return output
+
+class Build_MobileNetV3(nn.Sequential):
     def __init__(self, input_channel=3, num_classes=1000, alpha=1):
-        super(Build_MobileNet, self).__init__()
+        super(Build_MobileNetV3, self).__init__()
 
-        self.Stem = ConvBlock(input_channel, 32, 3, 2, 1)
+        self.Stem = ConvBlock(input_channel, 16, 3, 2, 1)
 
         layer_list = []
 
-        layer_list.append(Depthwise_Separable_Block(32, 64, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(64, 128, strides=2, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 128, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(128, 256, strides=2, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 256, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(256, 512, strides=2, alpha=alpha))
+        layer_list.append(Inverted_Residual_Block(16, 1, 16, 1, 1, use_se=False, use_hs=False))
+
+        layer_list.append(Inverted_Residual_Block(16, 4, 24, 2, 1, use_se=False, use_hs=False))
+        layer_list.append(Inverted_Residual_Block(24, 3, 24, 1, 1, use_se=False, use_hs=False))
+
+        layer_list.append(Inverted_Residual_Block(24, 3, 40, 2, 1, use_hs=False))
+        layer_list.append(Inverted_Residual_Block(40, 3, 40, 1, 1, use_hs=False))
+        layer_list.append(Inverted_Residual_Block(40, 3, 40, 1, 1, use_hs=False))
+
+        layer_list.append(Inverted_Residual_Block(40, 6, 80, 2, 1, use_se=False))
+        layer_list.append(Inverted_Residual_Block(80, 2.5, 80, 1, 1, use_se=False))
+        layer_list.append(Inverted_Residual_Block(80, 2.3, 80, 1, 1, use_se=False))
+        layer_list.append(Inverted_Residual_Block(80, 2.3, 80, 1, 1, use_se=False))
+        layer_list.append(Inverted_Residual_Block(80, 6, 112, 1, 1))
+        layer_list.append(Inverted_Residual_Block(112, 6, 112, 1, 1))
         
-        for _ in range(5):
-            layer_list.append(Depthwise_Separable_Block(512, 512, alpha=alpha))
-        
-        layer_list.append(Depthwise_Separable_Block(512, 1024, strides=2, alpha=alpha))
-        layer_list.append(Depthwise_Separable_Block(1024, 1024, alpha=alpha))
-        
+        layer_list.append(Inverted_Residual_Block(112, 6, 160, 2, 1))
+        layer_list.append(Inverted_Residual_Block(160, 6, 160, 1, 1))
+        layer_list.append(Inverted_Residual_Block(160, 6, 160, 1, 1))
+
+        layer_list.append(ConvBlock(160, 960, 1, 1, 0))
+
         self.Main_Block = nn.Sequential(*layer_list)
 
         self.Classifier = nn.Sequential(
             nn.AdaptiveAvgPool2d((1,1)),
             nn.Flatten(),
-            nn.Linear(1024, num_classes)
+            nn.Linear(960, 1280),
+            Hard_Swish(True),
+            nn.Linear(1280, num_classes)
         )
         
     def forward(self, x):
@@ -128,9 +199,9 @@ class Build_MobileNet(nn.Sequential):
         x = self.Classifier(x)
         return x
 
-mobilenet = Build_MobileNet(input_channel=imgs_tr.shape[-1], num_classes=5, alpha=1).to(device)
+mobilenetv3 = Build_MobileNetV3(input_channel=imgs_tr.shape[-1], num_classes=5, alpha=1).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(mobilenet.parameters(), lr=0.001)
+optimizer = optim.Adam(mobilenetv3.parameters(), lr=0.001)
 
 # %%
 epochs=100
@@ -168,7 +239,7 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
 
-        y_pred = mobilenet.forward(X)
+        y_pred = mobilenetv3.forward(X)
 
         loss = criterion(y_pred, Y)
         
@@ -186,7 +257,7 @@ for epoch in range(epochs):
         for (batch_img, batch_lab) in val_loader:
             X = batch_img.to(device)
             Y = batch_lab.to(device)
-            y_pred = mobilenet(X)
+            y_pred = mobilenetv3(X)
             val_loss += criterion(y_pred, Y)
             _, predicted = torch.max(y_pred.data, 1)
             total += Y.size(0)
