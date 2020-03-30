@@ -81,9 +81,9 @@ class Hard_Swish(nn.Module):
     def forward(self, x):
         return x * F.relu6(x + 3., inplace=self.inplace) / 6.
 
-class ConvBlock(nn.Module):
+class Conv_Block(nn.Module):
     def __init__(self, input_feature, output_feature, ksize=3, strides=1, padding=1, use_hs=True):
-        super(ConvBlock, self).__init__()
+        super(Conv_Block, self).__init__()
         Act = Hard_Swish if use_hs else nn.ReLU6
         self.block = nn.Sequential(
             nn.Conv2d(input_feature, output_feature, ksize, strides, padding),
@@ -143,7 +143,7 @@ class Inverted_Residual_Block(nn.Module):
         self.alpha = alpha
         
         self.block = nn.Sequential(
-            ConvBlock(input_feature, self.intermediate_featrue, 1, 1, 0, use_hs),
+            Conv_Block(input_feature, self.intermediate_featrue, 1, 1, 0, use_hs),
             Depthwise_Separable_Block(self.intermediate_featrue, self.output_feature, 3, strides, 1, self.alpha, use_se, use_hs)
         )
     
@@ -157,7 +157,7 @@ class Build_MobileNetV3(nn.Sequential):
     def __init__(self, input_channel=3, num_classes=1000, alpha=1):
         super(Build_MobileNetV3, self).__init__()
 
-        self.Stem = ConvBlock(input_channel, 16, 3, 2, 1)
+        self.Stem = Conv_Block(input_channel, 16, 3, 2, 1)
 
         layer_list = []
 
@@ -181,7 +181,7 @@ class Build_MobileNetV3(nn.Sequential):
         layer_list.append(Inverted_Residual_Block(160, 6, 160, 1, 1))
         layer_list.append(Inverted_Residual_Block(160, 6, 160, 1, 1))
 
-        layer_list.append(ConvBlock(160, 960, 1, 1, 0))
+        layer_list.append(Conv_Block(160, 960, 1, 1, 0))
 
         self.Main_Block = nn.Sequential(*layer_list)
 
