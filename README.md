@@ -105,7 +105,8 @@
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/MobileNetV3/PyTorch.py)
 
 11. SqueezeNet (https://arxiv.org/abs/1602.07360)
-[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/SqueezeNet/tf_keras.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/SqueezeNet/tf_keras.py), 
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/CNN/SqueezeNet/PyTorch.py)
 
 
 #### Segmentation
