@@ -83,8 +83,8 @@ def Squeeze_Excitation_Module(input, filters, reduction_ratio, name="SE"):
     return out
 
 def SE_Block(input, filters, strides, reduction_ratio, use_bn=False, use_proj=False, proj_ksize=3, name="Block"):
-    out = Conv_Block(input, filters//2, 1, 1, 'same', 'relu', use_bn, name=name+"_Conv_1")
-    out = Conv_Block(out, filters, 3, strides, 'same', 'relu', use_bn, name=name+"_Conv_2")
+    out = Conv_Block(input, filters//4, 1, 1, 'same', 'relu', use_bn, name=name+"_Conv_1")
+    out = Conv_Block(out, filters//4, 3, strides, 'same', 'relu', use_bn, name=name+"_Conv_2")
     out = Conv_Block(out, filters, 1, 1, 'same', 'linear', use_bn, name=name+"_Conv_3")
 
     out = Squeeze_Excitation_Module(out, filters, reduction_ratio, name=name+"_SE")
@@ -112,11 +112,11 @@ def build_senet(input_shape=(None, None, 3), num_classes=1, name='SqueezeNet'):
         x = SE_Block(x, 256, 1, 16, True, name=name+"_Block_2_%d"%(i+2))
 
     x = SE_Block(x, 512, 2, 16, True, True, 3, name=name+"_Block_3_1")
-    for i in range(7):
+    for i in range(3):
         x = SE_Block(x, 512, 1, 16, True, name=name+"_Block_3_%d"%(i+2))
 
     x = SE_Block(x, 1024, 2, 16, True, True, 3, name=name+"_Block_4_1")
-    for i in range(35):
+    for i in range(5):
         x = SE_Block(x, 1024, 1, 16, True, name=name+"_Block_4_%d"%(i+2))
 
     x = SE_Block(x, 2048, 2, 16, True, True, 3, name=name+"_Block_5_1")
