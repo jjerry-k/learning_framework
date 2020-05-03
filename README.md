@@ -153,3 +153,10 @@
 #### Style Transfer
 1. Neural Style Transfer  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/PyTroch/)
+
+#### Attention Module
+
+1. [BAM](https://arxiv.org/abs/1807.06514)
+
+
+2. [CBAM](https://arxiv.org/abs/1807.06521)
