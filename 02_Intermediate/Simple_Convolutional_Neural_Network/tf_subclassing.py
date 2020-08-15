@@ -15,10 +15,7 @@ BATCH_SIZE = 128
 
 # Data Loading
 (train_x, train_y), (test_x, test_y) = datasets.mnist.load_data()
-train_x, test_x = np.reshape(train_x/255., [-1, 784]), np.reshape(test_x/255., [-1, 784])
-# 0 : digit < 5
-# 1 : digit >= 5
-train_y, test_y = np.greater_equal(train_y, 5)[..., np.newaxis], np.greater_equal(test_y, 5)[..., np.newaxis]
+train_x, test_x = np.expand_dims(train_x/255., -1), np.expand_dims(test_x/255., -1)
 
 
 print("Train Data's Shape : ", train_x.shape, train_y.shape)
@@ -35,28 +32,38 @@ test_ds = tf.data.Dataset.from_tensor_slices(
 print("Data Prepared!")
 
 # %%
-class LinearRegression(models.Model):
+class SimpleConvolutionalNeuralNetwork(models.Model):
     def __init__(self):
-        super(LinearRegression, self).__init__()
-        self.d = layers.Dense(1, input_shape=(1, ), activation='sigmoid')
-
+        super(SimpleConvolutionalNeuralNetwork, self).__init__()
+        self.conv1 = layers.Conv2D(16, 3, activation='relu', input_shape=(28, 28, 1,))
+        self.pool1 = layers.MaxPool2D()
+        self.conv2 = layers.Conv2D(32, 3, activation='relu')
+        self.pool2 = layers.MaxPool2D()
+        self.flat = layers.Flatten()
+        self.dense = layers.Dense(10, activation='softmax')
     def call(self, x):
-        return self.d(x)
+        x = self.conv1(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = self.pool2(x)
+        x = self.flat(x)
+        return self.dense(x)
 
 # Create an instance of the model
-model = LinearRegression()
+model = SimpleConvolutionalNeuralNetwork()
 
-loss_object = losses.BinaryCrossentropy()
+loss_object = losses.SparseCategoricalCrossentropy(from_logits=True)
 
 optimizer = optimizers.Adam()
 
 # %%
 for epoch in range(EPOCHS):
+    epoch_loss = 0
     for batch_x, batch_y in train_ds:
         with tf.GradientTape() as tape:
             predictions = model(batch_x, training=True)
             loss = loss_object(batch_y, predictions)
             gradients = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-    print("{:5}|{:10.6f}".format(epoch+1, loss))
+            epoch_loss += loss
+    print("{:5}|{:10.6f}".format(epoch+1, loss/(len(train_x)/BATCH_SIZE + 1)))
