@@ -10,7 +10,7 @@
 - 배포 : Google
 - 공식 홈페이지 : https://www.tensorflow.org
 - 주 사용 프레임워크
-- Low level(tf.nn), High level(tf.keras) 로 작성하려함.
+- Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
 
 ### PyTorch
 - 배포 : Facebook
