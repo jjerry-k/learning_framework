@@ -52,7 +52,7 @@ class SimpleConvolutionalNeuralNetwork(models.Model):
 # Create an instance of the model
 model = SimpleConvolutionalNeuralNetwork()
 
-loss_object = losses.SparseCategoricalCrossentropy(from_logits=True)
+loss_object = losses.SparseCategoricalCrossentropy()
 
 optimizer = optimizers.Adam()
 

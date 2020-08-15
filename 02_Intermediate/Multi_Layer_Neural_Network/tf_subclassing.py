@@ -46,7 +46,7 @@ class MultiLayerNeuralNetwork(models.Model):
 # Create an instance of the model
 model = MultiLayerNeuralNetwork()
 
-loss_object = losses.SparseCategoricalCrossentropy(from_logits=True)
+loss_object = losses.SparseCategoricalCrossentropy()
 
 optimizer = optimizers.Adam()
 
