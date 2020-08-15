@@ -11,6 +11,7 @@
 - 공식 홈페이지 : https://www.tensorflow.org
 - 주 사용 프레임워크
 - Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
+- 1.x -> 2.x 로 변겅중.
 
 ### PyTorch
 - 배포 : Facebook
