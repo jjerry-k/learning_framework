@@ -4,7 +4,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import numpy as np
 
 import tensorflow as tf
-from tensorflow.keras import models, layers, optimizers, losses, utils, datasets
+from tensorflow.keras import models, layers, optimizers, losses, metrics, utils, datasets
 
 tf.random.set_seed(777)
 
@@ -18,7 +18,7 @@ BATCH_SIZE = 128
 train_x, test_x = np.reshape(train_x/255., [-1, 784]), np.reshape(test_x/255., [-1, 784])
 # 0 : digit < 5
 # 1 : digit >= 5
-train_y, test_y = np.greater_equal(train_y, 5)[..., np.newaxis], np.greater_equal(test_y, 5)[..., np.newaxis]
+train_y, test_y = np.greater_equal(train_y, 5)[..., np.newaxis].astype(np.float32), np.greater_equal(test_y, 5)[..., np.newaxis].astype(np.float32)
 
 
 print("Train Data's Shape : ", train_x.shape, train_y.shape)
@@ -35,28 +35,37 @@ test_ds = tf.data.Dataset.from_tensor_slices(
 print("Data Prepared!")
 
 # %%
-class LinearRegression(models.Model):
+class LogisticRegression(models.Model):
     def __init__(self):
-        super(LinearRegression, self).__init__()
+        super(LogisticRegression, self).__init__()
         self.d = layers.Dense(1, input_shape=(784, ), activation='sigmoid')
 
     def call(self, x):
         return self.d(x)
 
 # Create an instance of the model
-model = LinearRegression()
+model = LogisticRegression()
 
 loss_object = losses.BinaryCrossentropy()
-
+metric = metrics.Accuracy()
 optimizer = optimizers.Adam()
 
 # %%
 for epoch in range(EPOCHS):
+    epoch_loss, val_loss, val_acc = 0, 0, 0
     for batch_x, batch_y in train_ds:
         with tf.GradientTape() as tape:
             predictions = model(batch_x, training=True)
             loss = loss_object(batch_y, predictions)
             gradients = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        epoch_loss += loss
 
-    print("{:5}|{:10.6f}".format(epoch+1, loss))
+
+    for batch_x, batch_y in test_ds:
+        predictions = model(batch_x, training=False)
+        val_loss += loss_object(batch_y, predictions)
+        val_acc += metric(batch_y, tf.greater_equal(predictions, 0.5))
+
+    print("{:5} | {:10.6f} | {:10.6f} | {:10.2f}".format(epoch+1, loss/(len(train_x)/BATCH_SIZE), \
+                                                            val_loss/(len(test_x)/BATCH_SIZE), val_acc/(len(test_x)/BATCH_SIZE)))
