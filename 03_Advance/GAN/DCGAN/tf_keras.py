@@ -43,10 +43,10 @@ def Build_Discriminator(input_shape=(28,28), name="Discriminator"):
     model.add(layers.Reshape((input_shape[0], input_shape[1], 1), input_shape=input_shape, name=name+"_Reshape"))
     model.add(layers.Conv2D(128, 4, 2, padding='same', name=name+"_Conv_1"))
     model.add(layers.BatchNormalization(name=name+"_BN_1"))
-    model.add(layers.LeakyReLU(0.03, name=name+"_Act_1"))
+    model.add(layers.LeakyReLU(0.01, name=name+"_Act_1"))
     model.add(layers.Conv2D(64, 4, 2, padding='same', name=name+"_Conv_2"))
     model.add(layers.BatchNormalization(name=name+"_BN_2"))
-    model.add(layers.LeakyReLU(0.03, name=name+"_Act_2"))
+    model.add(layers.LeakyReLU(0.01, name=name+"_Act_2"))
     model.add(layers.Flatten(name=name+"_Flatten"))
     model.add(layers.Dense(1, activation='sigmoid', name=name+"_Output"))
 

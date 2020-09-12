@@ -134,10 +134,10 @@
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/LSGAN/PyTorch.py)
 
 3. DCGAN  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/PyTorch.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/tf_keras.py),  [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/PyTorch.py)
 
 4. CGAN  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/PyTorch.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/tf_keras.py),  [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/PyTorch.py)
 
 
 ### 04 Extra
