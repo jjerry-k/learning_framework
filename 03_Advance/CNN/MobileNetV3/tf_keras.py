@@ -12,7 +12,7 @@ from tensorflow.keras import backend as K
 # Data Prepare
 
 URL = 'https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz'
-path_to_zip  = tf.keras.utils.get_file('flower_photos.tgz', origin=URL, extract=True)
+path_to_zip  = utils.get_file('flower_photos.tgz', origin=URL, extract=True)
 
 PATH = os.path.join(os.path.dirname(path_to_zip), 'flower_photos')
 
