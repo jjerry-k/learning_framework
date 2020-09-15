@@ -151,7 +151,7 @@
 3. EDSR  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/PyTorch.py)
 
-#### Style Transfer
+#### Image Translation
 1. Neural Style Transfer  
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Style_Transfer/Neural_Style_Transfer/PyTroch/)
 
