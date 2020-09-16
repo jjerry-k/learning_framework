@@ -22,9 +22,9 @@ def decoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="valid",
         x = layers.BatchNormalization(name=name+"_BN")(x)
     return x
 
-def generator_encoder_decoder(input_channel = 3, output_channel = 3, name="Generator"):
+def generator_encoder_decoder(input_size = 256, input_channel = 3, output_channel = 3, name="Generator"):
 
-    input_layer = layers.Input(shape=(256, 256, input_channel), name=name+"_Input")
+    input_layer = layers.Input(shape=(input_size, input_size, input_channel), name=name+"_Input")
 
     en1 = encoding_block(input_layer, 64, use_act=False, use_bn=False, name=name+'_En1')
     en2 = encoding_block(en1, 128, name=name+'_En2')
@@ -51,9 +51,9 @@ def generator_encoder_decoder(input_channel = 3, output_channel = 3, name="Gener
 
     return models.Model(inputs=input_layer, outputs=output, name=name)
 
-def generator_unet(input_channel = 3, output_channel = 3, name="Generator"):
+def generator_unet(input_size = 256, input_channel = 3, output_channel = 3, name="Generator"):
     
-    input_layer = layers.Input(shape=(256, 256, input_channel), name=name+"_Input")
+    input_layer = layers.Input(shape=(input_size, input_size, input_channel), name=name+"_Input")
 
     en1 = encoding_block(input_layer, 64, use_act=False, use_bn=False, name=name+'_En1')
     en2 = encoding_block(en1, 128, name=name+'_En2')
@@ -87,7 +87,7 @@ def generator_unet(input_channel = 3, output_channel = 3, name="Generator"):
 
     return models.Model(inputs=input_layer, outputs=output, name=name)
 
-def discriminator(input_channel = 3, output_channel = 3,  n_layers=0, name='Discriminator'):
+def discriminator(input_size = 256, input_channel = 3, output_channel = 3,  n_layers=0, name='Discriminator'):
 
     def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="valid", use_act=True, use_bn=True, name="Encoding"):
         x = layers.Conv2D(filters, ksize, strides, padding, name=name+"_Conv")(x)
@@ -97,7 +97,7 @@ def discriminator(input_channel = 3, output_channel = 3,  n_layers=0, name='Disc
             x = layers.LeakyReLU(0.2, name=name+"_Act")(x)
         return x
         
-    input_layer = layers.Input(shape=(256, 256, input_channel+output_channel), name=name+'_Input')
+    input_layer = layers.Input(shape=(input_size, input_size, input_channel+output_channel), name=name+'_Input')
 
     if n_layers==0:
         x = encoding_block(input_layer, 64, ksize=(1, 1), strides=(1, 1), use_bn=False, name=name+'_En1')

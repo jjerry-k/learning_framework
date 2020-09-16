@@ -1,18 +1,100 @@
-# %%
 import os
-from tensorflow.keras import utils
+import csv
+import tqdm
+import datetime
+import random
+import argparse
 
-# %%
-URLS = {
-    "cityscapes":"https://storage.googleapis.com/kaggle-data-sets/34683%2F47283%2Fupload%2Fcityscapes.tar.gz?GoogleAccessId=gcp-kaggle-com@kaggle-161607.iam.gserviceaccount.com&Expires=1600348868&Signature=GBgaAVrmtZDZDcTZsku73fpUWpxJFTkddF8gDfK8JqUnX%2FEKAw1KRVjypae8AXEfSaDVz5cotQFPMR61Cp2hobuwrv4rUigaOl4nUPmswFyrEJ2TdyUiqkSt0%2FZOS3NpZNQyHvM23OkS%2BycOlEBrWwQi6MVgtxrYOTUPvuFQWKzCPCuhJc%2B8M30cedFDQVlNWCR6WCco708929pAaDi9%2F6T1cg7naesAehiGR%2BxrHpy3Y4rS44FkFsEuvl2GegDBhgQtp56m%2FNoOLRJywSqtN81%2FCJ96Iv8iNXkUa9%2B3DRQtBqG6jm8P0NTi74vfS2c9jKOBV8H2dIyZwagzMe8XwQ%3D%3D",
-    "facades":"https://storage.googleapis.com/kaggle-data-sets/34683%2F47283%2Fupload%2Ffacades.tar.gz?GoogleAccessId=gcp-kaggle-com@kaggle-161607.iam.gserviceaccount.com&Expires=1600348915&Signature=f42FabfOQvoXnmd8KQUUTIIUNgkaodPl0wjQelA28hSpzD4qE27k7nkUTCfqLrpxvIigPyQkJmIKpGCFUp6TMbBeylQwVSxYdcIFT3Z1rd6yw9QCqULckOTxJ%2B0EhtrxnSzejgtNR%2FuuNmUZDtQwnWeE%2FgJTOG%2BLOgteixozVncV7EvnJ0Im%2FPTfH2PWHXy6gntSyNpdpNdYpyxqKeqRQnvY9NUIzR6ir7YsfNOiahob%2FUB%2BvNZY3%2BX%2FoCRlRy91rb1cjSJfVIiENBD9sqOKpeURQmVF68wWhZjb1%2BPWQBX4moIr1%2B2IjeFCkKkOZ2mcltG%2BFMEpIcSWogWVIyRUrw%3D%3D",
-    "maps":"https://storage.googleapis.com/kaggle-data-sets/34683%2F47283%2Fupload%2Fmaps.tar.gz?GoogleAccessId=gcp-kaggle-com@kaggle-161607.iam.gserviceaccount.com&Expires=1600348965&Signature=jVMS6hKRhRFrH5rQCrYhpzW%2FZfRfHZRzRzlYtdmJvQBIgV9qMs6BCW1IW1y7HbKLV%2BWh16DNaaXQbO%2FDOT5Y5Z3dBw7s20qgOj2rZxZmXjzi1Lq1D5OesSiqy9TucthRoRrcgJCSbFVru6Vo3FE6GiJtyXOPUSBG2k%2FTnkK5ZVtTXMeAUB%2B3tdnsSFrujFN8eHR%2FFkBcDfVOQIxPiMpj%2FB55eF0zf6ISsUFQsfmwJe5LBjerv8nbj90%2B05eD%2Bd1gXMR3TzIvFsBYBYj7JHJabEsRtESq3auwQPmvAhctGXz5zXbB%2BJ4M%2BsLRc8yT9ilwX26nE2QCk99wjZ8vBh7M9Q%3D%3D"
-}
+import cv2 as cv
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras import models, layers, losses, optimizers
+from tensorflow.keras.utils import Progbar
 
-DATA_ROOT = "../dataset/"
-dataset = "facades"
-URL = URLS[dataset]
-path_to_zip  = utils.get_file(f"{dataset}.tar", origin=URL, extract=True)
+from models import *
 
-PATH = os.path.join(os.path.dirname(path_to_zip), dataset)
-# %%
+tf.random.set_seed(42)
+
+# For Efficiency
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        print(e)
+
+def load_img(path, size):
+    img = cv.imread(path)
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    img = cv.resize(img, (size, size))
+    return img
+
+# strategy = tf.distribute.MirroredStrategy()
+# with strategy.scope():
+def main(args):
+    
+    print(f"Load {args.DATASET} dataset.....")
+
+    datasets_root = "../../datasets" # Please edit your root path of datasets
+    
+    train_domain_A_path = os.path.join(datasets_root, args.DATASET, "train", "domain_A")
+    train_domain_B_path = os.path.join(datasets_root, args.DATASET, "train", "domain_B")
+
+    val_domain_A_path = os.path.join(datasets_root, args.DATASET, "val", "domain_A")
+    val_domain_B_path = os.path.join(datasets_root, args.DATASET, "val", "domain_B")
+
+    train_A = np.array([load_img(os.path.join(train_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_A_path))])/127.5 -1
+    train_B = np.array([load_img(os.path.join(train_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_B_path))])/127.5 -1
+    
+    val_A = np.array([load_img(os.path.join(val_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_A_path))])/127.5 -1
+    val_B = np.array([load_img(os.path.join(val_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_B_path))])/127.5 -1
+
+    print("\nTraining data shape")
+    print(f"Domain A: {train_A.shape}")
+    print(f"Domain B: {train_B.shape}")
+
+    print("\nValidation data shape")
+    print(f"Domain A: {val_A.shape}")
+    print(f"Domain B: {val_B.shape}")
+
+
+    # print("================ Building Network ================")
+    # residual_channels = args.num_channel
+    # G = generator_unet(input_size=args.IMG_SIZE, residual_channel=residual_channels, 
+    #             layer_activation='leaky_relu', 
+    #             name='3D_SR_Gen')
+    # D = discriminator(input_size=args.IMG_SIZE, input_channel=)
+
+    # D.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.binary_crossentropy)
+
+    # D.trainable=False
+
+    # A = models.Model(inputs=G.input, outputs = [G.output, D(G.input)], name='GAN')
+    # A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[loss_dict[args.loss.upper()], losses.binary_crossentropy], 
+    #         loss_weights=[10, 1], metrics={'3D_SR_Gen_output_act':[gradient_3d_loss, psnr]})
+    # print("==================================================\n")
+
+
+if __name__ ==  "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--DATASET", default="cityscapes", type=str, help="Dataset")
+    parser.add_argument("--IMG_SIZE", default=64, type=int, help="Imgae size")
+    
+
+    args = parser.parse_args()
+
+    dict_args = vars(args)
+
+    for i in dict_args.keys():
+        assert dict_args[i]!=None, '"%s" key is None Value!'%i
+    print("\n================ Training Options ================")
+    print(f"Dataset : {args.DATASET}")
+    print(f"Imgae size : {args.IMG_SIZE}")
+    print("====================================================\n")
+
+
+    main(args)
