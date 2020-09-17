@@ -14,7 +14,7 @@ def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", 
         x = layers.BatchNormalization(name=name+"_BN")(x)
     return x
 
-def decoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="valid", use_bn=True, name="Decoding"):
+def decoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", use_bn=True, name="Decoding"):
     x = layers.ReLU(name=name+"_Act")(x)
     x = layers.Conv2DTranspose(filters, ksize, strides, padding, name=name+"_ConvTranspose")(x)
     if use_bn:
@@ -97,28 +97,28 @@ def discriminator(input_size = 256, A_channel = 3, B_channel = 3,  n_layers=0, n
         return x
         
     input_layer_A = layers.Input(shape=(input_size, input_size, A_channel), name=name+"_Input_A")
-    input_layer_B = layers.Input(shape=(input_size, input_size, B_channel), name=name+"_Input_A")
+    input_layer_B = layers.Input(shape=(input_size, input_size, B_channel), name=name+"_Input_B")
 
     input_layer = layers.Concatenate(name=name+"_Input_Combin")([input_layer_A, input_layer_B])
 
     if n_layers==0:
         x = encoding_block(input_layer, 64, ksize=(1, 1), strides=(1, 1), use_bn=False, name=name+"_En1")
-        x = encoding_block(x, 256, ksize=(1, 1), strides=(1, 1), name=name+"En2")
+        x = encoding_block(x, 128, ksize=(1, 1), strides=(1, 1), name=name+"En2")
         x = encoding_block(x, 1, ksize=(1, 1), strides=(1, 1), use_act=False, use_bn=False, name=name+"En3")
         output = layers.Avtivation("sigmoid", name=name+"_Output")(x) 
         return models.Model(inputs = input_layer, outputs = output, name=name)
     else:
         
-        x = encoding_block(input_layer, 64, use_bn=False, name=name+"_En1")
+        x = encoding_block(input_layer, 64, padding="same", use_bn=False, name=name+"_En1")
 
-        for i in range(1, n_layers-2):
+        for i in range(1, n_layers-1):
             mul_fact = min(2**i, 8)
-            x = encoding_block(x, mul_fact*64, name=name+f"_En{i+1}")
+            x = encoding_block(x, mul_fact*64, padding="same", name=name+f"_En{i+1}")
 
         mul_fact = min(2**(n_layers-1), 8)
-        x = encoding_block(x, mul_fact*64, ksize=(4, 4), strides=(1, 1), padding="valid", name=name+f"_En{n_layers-1}")
-        x = encoding_block(x, 1, ksize=(4, 4), strides=(1, 1), padding="valid", use_act=False, use_bn=False, name=name+f"_En{n_layers}")
-        x = layers.Activateion("sigmoid", name=name+"_Output")(x)
+        x = encoding_block(x, mul_fact*64, ksize=(4, 4), strides=(1, 1), padding="same", name=name+f"_En{n_layers+1}")
+        x = encoding_block(x, 1, ksize=(4, 4), strides=(1, 1), padding="same", use_act=False, use_bn=False, name=name+f"_En{n_layers+2}")
+        x = layers.Activation("sigmoid", name=name+"_Output")(x)
         return models.Model(inputs = [input_layer_A, input_layer_B], outputs = x, name=name)
     
     # D1: C64-C128
