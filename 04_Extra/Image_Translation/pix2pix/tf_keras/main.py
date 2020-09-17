@@ -62,27 +62,43 @@ def main(args):
     print(f"Domain B: {val_B.shape}")
 
 
-    # print("================ Building Network ================")
-    # residual_channels = args.num_channel
-    # G = generator_unet(input_size=args.IMG_SIZE, residual_channel=residual_channels, 
-    #             layer_activation='leaky_relu', 
-    #             name='3D_SR_Gen')
-    # D = discriminator(input_size=args.IMG_SIZE, input_channel=)
+    print("================ Building Network ================")
+    A_channel = train_A.shape[-1]
+    B_channel = train_B.shape[-1]
+    G = generator_unet(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, name="Generator")
+    G.summary()
 
-    # D.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.binary_crossentropy)
+    D = discriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=3, name="Discriminator")
+    D.summary()
+    
+    D.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.BinaryCrossentropy)
 
-    # D.trainable=False
+    D.trainable=False
 
-    # A = models.Model(inputs=G.input, outputs = [G.output, D(G.input)], name='GAN')
-    # A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[loss_dict[args.loss.upper()], losses.binary_crossentropy], 
-    #         loss_weights=[10, 1], metrics={'3D_SR_Gen_output_act':[gradient_3d_loss, psnr]})
-    # print("==================================================\n")
+    A_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, A_channel), name="GAN_Input_A")
+    B_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, B_channel), name="GAN_Input_B")
+    
+    fake_B = G(A_img)
+
+    D_output = D([A_img, fake_B])
+
+    A = models.Model(inputs=[A_img, B_img], outputs = [D_output, fake_B], name='GAN')
+    A.summary()
+
+    A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
+            loss_weights=[1, 100])
+    
+
+    print("==================================================\n")
 
 
 if __name__ ==  "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--DATASET", default="cityscapes", type=str, help="Dataset")
-    parser.add_argument("--IMG_SIZE", default=64, type=int, help="Imgae size")
+    parser.add_argument("--IMG_SIZE", default=256, type=int, help="Imgae size")
+    parser.add_argument("--EPOCHS", default=100, type=int, help="Number of Epoch")
+    parser.add_argument("--BATCH_SIZE", default=32, type=int, help="Number of Batch")
+
     
 
     args = parser.parse_args()
@@ -94,6 +110,8 @@ if __name__ ==  "__main__":
     print("\n================ Training Options ================")
     print(f"Dataset : {args.DATASET}")
     print(f"Imgae size : {args.IMG_SIZE}")
+    print(f"Epochs : {args.EPOCHS}")
+    print(f"Batch size : {args.BATCH_SIZE}")
     print("====================================================\n")
 
 
