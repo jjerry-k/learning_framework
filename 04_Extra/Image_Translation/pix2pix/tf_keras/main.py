@@ -105,6 +105,11 @@ def main(args):
 
     for epoch in range(epochs):
         
+        g_total = 0
+        g_ad = 0
+        g_mae = 0
+        d_ad = 0
+
         shuffle_idx = np.random.choice(train_length, train_length, replace=False)
         
         epoch_progbar = Progbar(num_iter, width=15)
@@ -116,29 +121,47 @@ def main(args):
             fake_label = np.zeros((len(step_idx), d_output_size, d_output_size, 1))
 
             # Generate fake images
-
             fake_imgs = G.predict(train_A[step_idx])
 
             # Train Discriminator
             dis_label = np.concatenate([fake_label, real_label])
             Set_A = np.concatenate([fake_imgs, train_A[step_idx]], axis=0)
             Set_B = np.concatenate([train_B[step_idx], train_B[step_idx]], axis=0)
-
             # [Ad]
-            Dis_Loss = D.train_on_batch([Set_A, Set_B], dis_label)
-            print(Dis_Loss)
+            D_Loss = D.train_on_batch([Set_A, Set_B], dis_label)
             # Train Generator
             # [Ad + 100*mae, Ad, mae]
-            Gan_Loss = A.train_on_batch([train_A[step_idx], train_B[step_idx]], 
+            G_Loss = A.train_on_batch([train_A[step_idx], train_B[step_idx]], 
                                         [real_label, train_B[step_idx]])
-            print(Gan_Loss)
-            
+
+            g_total += G_Loss[0]
+            g_ad += G_Loss[1]
+            g_mae += G_Loss[2]
+            d_ad += D_Loss
+            if i < num_iter:
+                epoch_progbar.update(i+1, [("G_Total", G_Loss[0])
+                                            ("G_Ad", G_Loss[1]), 
+                                            ("G_MAE", G_Loss[2]), 
+                                            ("D_Ad", D_Loss)
+                                            ])
+
+        val_g_total = 0
+        val_g_ad = 0
+        val_g_mae = 0
+
         for j, val_idx in enumerate(range(0, val_length, batch_size)):
             val_label = np.ones([len(val_A[val_idx:val_idx+batch_size]), d_output_size, d_output_size, 1])
             V_loss = A.test_on_batch(val_A[val_idx:val_idx+batch_size], 
                                             [val_B[val_idx:val_idx+batch_size], val_label])
-            V_output, _= A.predict(val_A[val_idx:val_idx+batch_size])
+            # V_output, _= A.predict(val_A[val_idx:val_idx+batch_size])
 
+            val_g_total += V_loss[0]
+            val_g_ad += V_loss[1]
+            val_g_mae += V_loss[2]
+
+        epoch_progbar.update(i+1, [("Val_G_Total", val_g_total/num_val_iter), ("Val_G_Ad", val_g_ad/num_val_iter), ("Val_G_MAE", val_g_mae/num_val_iter)])
+
+    
     print("Training Done ! ")
 
 if __name__ ==  "__main__":
