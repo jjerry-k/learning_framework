@@ -1,13 +1,8 @@
 import os
-import csv
-import tqdm
-import datetime
-import random
 import argparse
 
 import cv2 as cv
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import models, layers, losses, optimizers
 from tensorflow.keras.utils import Progbar
@@ -103,6 +98,16 @@ def main(args):
     num_iter = int(np.ceil(train_length/batch_size))
     num_val_iter = int(np.ceil(val_length/batch_size))
 
+    CKPT_PATH = './ckpt'
+    os.makedirs(CKPT_PATH, exist_ok=True)
+    model_json = A.to_json()
+    with open(os.path.join(CKPT_PATH, "GAN.json"), "w") as json_file:
+        json_file.write(model_json)
+    print("\nModel Saved!\n")
+
+    SAMPLE_PATH = './result'
+    os.makedirs(SAMPLE_PATH, exist_ok=True) 
+
     for epoch in range(epochs):
         
         g_total = 0
@@ -129,6 +134,7 @@ def main(args):
             Set_B = np.concatenate([train_B[step_idx], train_B[step_idx]], axis=0)
             # [Ad]
             D_Loss = D.train_on_batch([Set_A, Set_B], dis_label)
+            
             # Train Generator
             # [Ad + 100*mae, Ad, mae]
             G_Loss = A.train_on_batch([train_A[step_idx], train_B[step_idx]], 
@@ -153,15 +159,28 @@ def main(args):
             val_label = np.ones([len(val_A[val_idx:val_idx+batch_size]), d_output_size, d_output_size, 1])
             V_loss = A.test_on_batch(val_A[val_idx:val_idx+batch_size], 
                                             [val_B[val_idx:val_idx+batch_size], val_label])
-            # V_output, _= A.predict(val_A[val_idx:val_idx+batch_size])
-
+            
             val_g_total += V_loss[0]
             val_g_ad += V_loss[1]
             val_g_mae += V_loss[2]
 
         epoch_progbar.update(i+1, [("Val_G_Total", val_g_total/num_val_iter), ("Val_G_Ad", val_g_ad/num_val_iter), ("Val_G_MAE", val_g_mae/num_val_iter)])
 
-    
+        A.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_params.h5"))
+
+        train_float2int = np.concatenate((train_B[step_idx][0], fake_imgs[0]), axis=1)
+        train_float2int = (train_float2int + 1) * 127.5
+        train_float2int = cv.cvtColor(train_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
+        Train_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_train_result.jpg")
+        cv.imwrite(Train_Result_PATH, train_float2int)
+
+        val_result = G.predict(val_A[:1])
+        val_float2int = np.concatenate((val_B[0], val_result[0]), axis=1)
+        val_float2int = (val_float2int + 1) * 127.5
+        val_float2int = cv.cvtColor(val_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
+        Val_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_val_result.jpg")
+        cv.imwrite(Val_Result_PATH, val_float2int)
+
     print("Training Done ! ")
 
 if __name__ ==  "__main__":

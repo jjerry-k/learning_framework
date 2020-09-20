@@ -13,7 +13,3 @@ python download.py --dataset {dataset} # datasets: ['cityscapes', 'facades', 'ma
 cd ./{model}/{framework}
 python main.py --DATASET {dataset} --IMG_SIZE {img_size} --EPOCHS {epochs} --BATCH_SIZE {batch_size}
 ``` 
-
-To-do
-- [x] : Train/Validation log
-- [ ] : Save results / checkpoints / curve graph

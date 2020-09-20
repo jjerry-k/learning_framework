@@ -1,11 +1,5 @@
-# %%
-import os
-import cv2 as cv
-import numpy as np
-import tensorflow as tf
 from tensorflow.keras import layers, models
 
-# %%
 def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", use_act=True, use_bn=True, name="Encoding"):
     if use_act:
         x = layers.LeakyReLU(0.2, name=name+"_Act")(x)
@@ -87,6 +81,11 @@ def generator_unet(input_size = 256, A_channel = 3, B_channel = 3, name="Generat
     return models.Model(inputs=input_layer, outputs=output, name=name)
 
 def discriminator(input_size = 256, A_channel = 3, B_channel = 3,  n_layers=0, name="Discriminator"):
+    
+    # D1: C64-C128
+    # D16: C64-C128
+    # D70: C64-C128-C256-C512
+    # D286: C64-C128-C256-C512-C512-C512
 
     def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="valid", use_act=True, use_bn=True, name="Encoding"):
         x = layers.Conv2D(filters, ksize, strides, padding, name=name+"_Conv")(x)
@@ -96,6 +95,7 @@ def discriminator(input_size = 256, A_channel = 3, B_channel = 3,  n_layers=0, n
             x = layers.LeakyReLU(0.2, name=name+"_Act")(x)
         return x
         
+
     input_layer_A = layers.Input(shape=(input_size, input_size, A_channel), name=name+"_Input_A")
     input_layer_B = layers.Input(shape=(input_size, input_size, B_channel), name=name+"_Input_B")
 
@@ -120,9 +120,3 @@ def discriminator(input_size = 256, A_channel = 3, B_channel = 3,  n_layers=0, n
         x = encoding_block(x, 1, ksize=(4, 4), strides=(1, 1), padding="same", use_act=False, use_bn=False, name=name+f"_En{n_layers+2}")
         x = layers.Activation("sigmoid", name=name+"_Output")(x)
         return models.Model(inputs = [input_layer_A, input_layer_B], outputs = x, name=name)
-    
-    # D1: C64-C128
-    # D16: C64-C128
-    # D70: C64-C128-C256-C512
-    # D286: C64-C128-C256-C512-C512-C512
-# %%
