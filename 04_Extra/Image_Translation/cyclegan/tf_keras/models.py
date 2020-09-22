@@ -1,4 +1,17 @@
 from tensorflow.keras import layers, models
+import tensorflow_addons as tfa
+
+def norm_layer(mode="BN", name="Norm"):
+    if mode == "BN":
+        layer = layers.BatchNormalization(name=name+"_BN")
+    elif mode == "IN":
+        layer = tfa.layers.InstanceNormalization(name=name+"_IN")
+    
+    elif mode == "LN":
+        layer = layers.LayerNormalization(name=name+"_LN")
+    else :
+        layer = lambda: lambda x: x
+    return layer
 
 def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", use_act=True, use_bn=True, name="Encoding"):
     if use_act:
