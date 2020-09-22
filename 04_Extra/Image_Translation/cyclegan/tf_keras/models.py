@@ -6,7 +6,6 @@ def norm_layer(mode="BN", name="Norm"):
         layer = layers.BatchNormalization(name=name+"_BN")
     elif mode == "IN":
         layer = tfa.layers.InstanceNormalization(name=name+"_IN")
-    
     elif mode == "LN":
         layer = layers.LayerNormalization(name=name+"_LN")
     else :
