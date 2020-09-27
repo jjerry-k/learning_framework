@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.keras import layers, models
 import tensorflow_addons as tfa
 
@@ -12,85 +13,28 @@ def norm_layer(mode="BN", name="Norm"):
         layer = lambda: lambda x: x
     return layer
 
-def encoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", use_act=True, use_bn=True, name="Encoding"):
-    if use_act:
-        x = layers.LeakyReLU(0.2, name=name+"_Act")(x)
-    x = layers.Conv2D(filters, ksize, strides, padding, name=name+"_Conv")(x)
-    if use_bn:
-        x = layers.BatchNormalization(name=name+"_BN")(x)
-    return x
+def residual_block(x, filters=32, padding_type="REFLECT", use_dropout=True, use_bias=True):
+    output = tf.pad(x, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type)
+    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False)(output)
+    output = norm_layer()(output)
+    output = tf.nn.relu(output)
 
-def decoding_block(x, filters=32, ksize=(4, 4), strides=(2, 2), padding="same", use_bn=True, name="Decoding"):
-    x = layers.ReLU(name=name+"_Act")(x)
-    x = layers.Conv2DTranspose(filters, ksize, strides, padding, name=name+"_ConvTranspose")(x)
-    if use_bn:
-        x = layers.BatchNormalization(name=name+"_BN")(x)
-    return x
+    output = tf.pad(output, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type)
+    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False)(output)
+    output = norm_layer()(output)
 
-def generator_encoder_decoder(input_size = 256, A_channel = 3, B_channel = 3, name="Generator"):
+    return layers.add([x, output])
 
-    input_layer = layers.Input(shape=(input_size, input_size, A_channel), name=name+"_Input")
+def ResnetGenerator(input_nc, output_nc, ngf=64, norm_layer="BN", use_dropout=False, n_blocks=6, padding_type='reflect'):
+    # To do 
+    # [ ] make resnetgenerator, unetgenerator
+    return 
 
-    en1 = encoding_block(input_layer, 64, use_act=False, use_bn=False, name=name+"_En1")
-    en2 = encoding_block(en1, 128, name=name+"_En2")
-    en3 = encoding_block(en2, 256, name=name+"_En3")
-    en4 = encoding_block(en3, 512, name=name+"_En4")
-    en5 = encoding_block(en4, 512, name=name+"_En5")
-    en6 = encoding_block(en5, 512, name=name+"_En6")
-    en7 = encoding_block(en6, 512, name=name+"_En7")
-    en8 = encoding_block(en7, 512, use_bn=False, name=name+"_En8")
-
-    de1 = decoding_block(en8, 512, name=name+"_De1")
-    de1 = layers.Dropout(0.5, name=name+"_De1_Dropout")(de1)
-    de2 = decoding_block(de1, 512, name=name+"_De2")
-    de2 = layers.Dropout(0.5, name=name+"_De2_Dropout")(de2)
-    de3 = decoding_block(de2, 512, name=name+"_De3")
-    de3 = layers.Dropout(0.5, name=name+"_De3_Dropout")(de3)
-    de4 = decoding_block(de3, 512, name=name+"_De4")
-    de5 = decoding_block(de4, 256, name=name+"_De5")
-    de6 = decoding_block(de5, 128, name=name+"_De6")
-    de7 = decoding_block(de6, 64, name=name+"_De7")
-    de8 = decoding_block(de7, B_channel, use_bn=False, name=name+"_De8")
-    
-    output = layers.Activation("tanh", name=name+name+"__Output")(de8)
-
-    return models.Model(inputs=input_layer, outputs=output, name=name)
-
-def generator_unet(input_size = 256, A_channel = 3, B_channel = 3, name="Generator"):
-    
-    input_layer = layers.Input(shape=(input_size, input_size, A_channel), name=name+"_Input")
-
-    en1 = encoding_block(input_layer, 64, use_act=False, use_bn=False, name=name+"_En1")
-    en2 = encoding_block(en1, 128, name=name+"_En2")
-    en3 = encoding_block(en2, 256, name=name+"_En3")
-    en4 = encoding_block(en3, 512, name=name+"_En4")
-    en5 = encoding_block(en4, 512, name=name+"_En5")
-    en6 = encoding_block(en5, 512, name=name+"_En6")
-    en7 = encoding_block(en6, 512, name=name+"_En7")
-    en8 = encoding_block(en7, 512, use_bn=False, name=name+"_En8")
-
-    de1 = decoding_block(en8, 512, name=name+"_De1")
-    de1 = layers.Dropout(0.5, name=name+"_De1_Dropout")(de1)
-    de1 = layers.Concatenate(name=name+"_De1_Concat")([de1, en7])
-    de2 = decoding_block(de1, 512, name=name+"_De2")
-    de2 = layers.Dropout(0.5, name=name+"_De2_Dropout")(de2)
-    de2 = layers.Concatenate(name=name+"_De2_Concat")([de2, en6])
-    de3 = decoding_block(de2, 512, name=name+"_De3")
-    de3 = layers.Dropout(0.5, name=name+"_De3_Dropout")(de3)
-    de3 = layers.Concatenate(name=name+"_De3_Concat")([de3, en5])
-    de4 = decoding_block(de3, 512, name=name+"_De4")
-    de4 = layers.Concatenate(name=name+"_De4_Concat")([de4, en4])
-    de5 = decoding_block(de4, 256, name=name+"_De5")
-    de5 = layers.Concatenate(name=name+"_De5_Concat")([de5, en3])
-    de6 = decoding_block(de5, 128, name=name+"_De6")
-    de6 = layers.Concatenate(name=name+"_De6_Concat")([de6, en2])
-    de7 = decoding_block(de6, 64, name=name+"_De7")
-    de7 = layers.Concatenate(name=name+"_De7_Concat")([de7, en1])
-    de8 = decoding_block(de7, B_channel, use_bn=False, name=name+"_De8")
-    
-    output = layers.Activation("tanh", name=name+name+"__Output")(de8)
-
-    return models.Model(inputs=input_layer, outputs=output, name=name)
+# 128x128 --> 6 blocks
+# 256x256 --> 9 blocks
+# three convolutions, sev- eral residual blocks [18], 
+# two fractionally-strided convo- lutions with stride 1/2 , 
+# and one convolution that maps fea- tures to RGB.
 
 def discriminator(input_size = 256, A_channel = 3, B_channel = 3,  n_layers=0, name="Discriminator"):
     
