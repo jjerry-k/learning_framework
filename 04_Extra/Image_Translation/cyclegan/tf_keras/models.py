@@ -13,22 +13,50 @@ def norm_layer(mode="BN", name="Norm"):
         layer = lambda: lambda x: x
     return layer
 
-def residual_block(x, filters=32, padding_type="REFLECT", use_dropout=True, use_bias=True):
-    output = tf.pad(x, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type)
-    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False)(output)
-    output = norm_layer()(output)
-    output = tf.nn.relu(output)
+def residual_block(x, filters=32, padding_type='reflect', norm_type="BN", use_dropout=True, use_bias=True, name="RB"):
+    output = tf.pad(x, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type, name=name+"_Pad_1")
+    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False, name=name+"_Conv_1")(output)
+    output = norm_layer(mode = norm_type, name=name+"_Norm_1")(output)
+    output = layers.ReLU(name=name+"_Act_1")(output)
 
-    output = tf.pad(output, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type)
-    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False)(output)
-    output = norm_layer()(output)
+    output = tf.pad(output, [[0, 0], [1, 1], [1, 1], [0, 0]], mode=padding_type, name=name+"_Pad_2")
+    output = layers.Conv2D(filters, 3, padding='valid', use_bias=False, name=name+"_Conv_2")(output)
+    output = norm_layer(mode = norm_type, name=name+"_Norm_2")(output)
 
-    return layers.add([x, output])
+    return layers.Add(name=name+"_Add")([x, output])
 
-def ResnetGenerator(input_nc, output_nc, ngf=64, norm_layer="BN", use_dropout=False, n_blocks=6, padding_type='reflect'):
+def ResnetGenerator(input_size=256, input_nc=3, output_nc=3, ngf=64, norm_type="BN", use_dropout=False, n_blocks=6, padding_type='reflect', name="Generator"):
     # To do 
-    # [ ] make resnetgenerator, unetgenerator
-    return 
+    # [ ] make unetgenerator
+    input_layer = layers.Input(shape=(input_size, input_size, input_nc), name=name+"_Input")
+
+    out = tf.pad(input_layer, [[0, 0], [3, 3], [3, 3], [0, 0]], mode=padding_type, name=name+"_Pad_1")
+    out = layers.Conv2D(ngf, 7, padding='valid', use_bias=False, name=name+"_Conv_1")(out)
+    out = norm_layer(mode = norm_type, name=name+"_Norm_1")(out)
+    out = layers.ReLU(name=name+"_Act_1")(out)
+
+    n_downsampling = 2
+
+    for i in range(n_downsampling):
+        ngf *= 2
+        out = layers.Conv2D(ngf, 3, strides=2, padding='same', use_bias=False, name=name+f"_Down_Conv_{i+2}")(out)
+        out = norm_layer(mode = norm_type, name=name+"_Down_Norm_{i+2}")(out)
+        out = layers.ReLU(name=name+"_Down_Act_{i+2}")(out)
+
+    for i in range(n_blocks):
+        out = residual_block(out, name=name+f"_RB_{i+1}")
+
+    for 1 in range(n_downsampling):
+        ngf //= 2
+        out = layers.Conv2DTranspose(ngf, 3, strides=2, padding='same', use_bias=False, name=name+f"_Up_Conv_{i+1}")(out)
+        out = norm_layer(mode = norm_type, name=name+"_Up_Norm_{i+1}")(out)
+        out = layers.ReLU(name=name+"_Up_Act_{i+1}")(out)
+
+    out = tf.pad(out, [[0, 0], [3, 3], [3, 3], [0, 0]], mode='REFLECT', name=name+"_Out_Pad")
+    out = layers.Conv2D(output_nc, 7, padding='valid', name=name+"_Out_Conv")(out)
+    out = layers.Activation('tanh', name=name+"_Output")(out)
+
+    return models.Model(inputs=input_layer, outputs=out, name=name)
 
 # 128x128 --> 6 blocks
 # 256x256 --> 9 blocks
