@@ -62,29 +62,40 @@ def main(args):
     B_channel = train_B.shape[-1]
     n_layers = 3
 
-    G = generator_unet(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, name="Generator")
-    G.summary()
-
-    D = discriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=n_layers, name="Discriminator")
-    D.summary()
+    G_A = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_A")
+    D_A = NLayerDiscriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=n_layers, name="D_A")
     
-    D.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.BinaryCrossentropy())
+    G_B = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_B")
+    D_B = NLayerDiscriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=n_layers, name="D_B")
 
-    D.trainable=False
+    D_A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.BinaryCrossentropy())
+    D_A.trainable=False
+
+    D_B.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.BinaryCrossentropy())
+    D_B.trainable=False
 
     A_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, A_channel), name="GAN_Input_A")
     B_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, B_channel), name="GAN_Input_B")
     
-    fake_B = G(A_img)
+    fake_A = G_A(B_img)
+    D_A_output = D_A(fake_A)
+    recon_B = G_B(fake_A)
 
-    D_output = D([A_img, fake_B])
+    A_A = models.Model(inputs=B_img, outputs = [D_A_output, recon_B], name='GAN_A')
 
-    A = models.Model(inputs=[A_img, B_img], outputs = [D_output, fake_B], name='GAN')
-    A.summary()
-
-    A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
+    A_A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
             loss_weights=[1, 100])
-    
+
+    fake_B = G_B(A_img)
+    D_B_output = D_B(fake_B)
+    recon_A = G_A(fake_B)
+
+    A_B = models.Model(inputs=A_img, outputs = [D_B_output, recon_A], name='GAN_A')
+
+    A_B.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
+            loss_weights=[1, 100])
+
+
     print("==================================================\n")
 
 
@@ -100,9 +111,15 @@ def main(args):
 
     CKPT_PATH = './ckpt'
     os.makedirs(CKPT_PATH, exist_ok=True)
-    model_json = A.to_json()
-    with open(os.path.join(CKPT_PATH, "GAN.json"), "w") as json_file:
+    
+    model_json = A_A.to_json()
+    with open(os.path.join(CKPT_PATH, "GAN_A.json"), "w") as json_file:
         json_file.write(model_json)
+
+    model_json = A_B.to_json()
+    with open(os.path.join(CKPT_PATH, "GAN_B.json"), "w") as json_file:
+        json_file.write(model_json)
+    
     print("\nModel Saved!\n")
 
     SAMPLE_PATH = './result'
@@ -126,7 +143,7 @@ def main(args):
             fake_label = np.zeros((len(step_idx), d_output_size, d_output_size, 1))
 
             # Generate fake images
-            fake_imgs = G.predict(train_A[step_idx])
+            fake_imgs = G_B.predict(train_A[step_idx])
 
             # Train Discriminator
             dis_label = np.concatenate([fake_label, real_label])

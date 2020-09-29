@@ -58,19 +58,8 @@ def ResnetGenerator(input_size=256, input_nc=3, output_nc=3, ngf=64, norm_type="
 
     return models.Model(inputs=input_layer, outputs=out, name=name)
 
-# 128x128 --> 6 blocks
-# 256x256 --> 9 blocks
-# three convolutions, sev- eral residual blocks [18], 
-# two fractionally-strided convo- lutions with stride 1/2 , 
-# and one convolution that maps fea- tures to RGB.
-
 def NLayerDiscriminator(input_size = 256, input_channel = 3, ndf=64, n_layers=3, norm_type="BN", name="Discriminator"):
     
-    # D1: C64-C128
-    # D16: C64-C128
-    # D70: C64-C128-C256-C512
-    # D286: C64-C128-C256-C512-C512-C512
-
     kw = 4
     padw = 1
     input_layer = layers.Input(shape=(input_size, input_size, input_channel), name=name+"_Input")
