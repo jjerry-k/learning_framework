@@ -62,10 +62,10 @@ def main(args):
     B_channel = train_B.shape[-1]
     n_layers = 3
 
-    G_A = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_A")
+    G_B2A = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_A")
     D_A = NLayerDiscriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=n_layers, name="D_A")
     
-    G_B = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_B")
+    G_A2B = ResnetGenerator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, norm_type="IN", name="G_B")
     D_B = NLayerDiscriminator(input_size=args.IMG_SIZE, A_channel=A_channel, B_channel=B_channel, n_layers=n_layers, name="D_B")
 
     D_A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=losses.BinaryCrossentropy())
@@ -77,23 +77,26 @@ def main(args):
     A_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, A_channel), name="GAN_Input_A")
     B_img = layers.Input(shape=(args.IMG_SIZE, args.IMG_SIZE, B_channel), name="GAN_Input_B")
     
-    fake_A = G_A(B_img)
+    fake_A = G_B2A(B_img)
     D_A_output = D_A(fake_A)
-    recon_B = G_B(fake_A)
+    recon_B = G_A2B(fake_A)
+    id_B = G_A2B(B_img)
+    A_B2A = models.Model(inputs=B_img, outputs = [D_A_output, recon_B, id_B], name='GAN_A')
 
-    A_A = models.Model(inputs=B_img, outputs = [D_A_output, recon_B], name='GAN_A')
+    A_B2A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), 
+            loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError(), losses.MeanAbsoluteError()], 
+            loss_weights=[1, 10, 0.5])
 
-    A_A.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
-            loss_weights=[1, 100])
-
-    fake_B = G_B(A_img)
+    fake_B = G_A2B(A_img)
     D_B_output = D_B(fake_B)
-    recon_A = G_A(fake_B)
+    recon_A = G_B2A(fake_B)
+    id_A = G_B2A(A_img)
 
-    A_B = models.Model(inputs=A_img, outputs = [D_B_output, recon_A], name='GAN_A')
+    A_A2B = models.Model(inputs=A_img, outputs = [D_B_output, recon_A, id_A], name='GAN_A')
 
-    A_B.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError()], 
-            loss_weights=[1, 100])
+    A_A2B.compile(optimizer=optimizers.Adam(lr=0.0001, epsilon=1e-8), 
+            loss=[losses.BinaryCrossentropy(), losses.MeanAbsoluteError(), losses.MeanAbsoluteError()], 
+            loss_weights=[1, 10, 0.5])
 
 
     print("==================================================\n")
@@ -127,10 +130,17 @@ def main(args):
 
     for epoch in range(epochs):
         
-        g_total = 0
-        g_ad = 0
-        g_mae = 0
-        d_ad = 0
+        g_a2b_total = 0
+        g_a2b_ad = 0
+        g_a2b_cyc = 0
+        g_a2b_idt = 0
+        d_a_ad = 0
+
+        g_b2a_total = 0
+        g_b2a_ad = 0
+        g_b2a_cyc = 0
+        g_b2a_idt = 0
+        d_b_ad = 0
 
         shuffle_idx = np.random.choice(train_length, train_length, replace=False)
         
@@ -143,48 +153,54 @@ def main(args):
             fake_label = np.zeros((len(step_idx), d_output_size, d_output_size, 1))
 
             # Generate fake images
-            fake_imgs = G_B.predict(train_A[step_idx])
+            fake_A_imgs = G_B2A.predict(train_B[step_idx])
+            fake_B_imgs = G_A2B.predict(train_A[step_idx])
 
             # Train Discriminator
             dis_label = np.concatenate([fake_label, real_label])
-            Set_A = np.concatenate([fake_imgs, train_A[step_idx]], axis=0)
-            Set_B = np.concatenate([train_B[step_idx], train_B[step_idx]], axis=0)
+            Set_A = np.concatenate([fake_A_imgs, train_A[step_idx]], axis=0)
+            Set_B = np.concatenate([fake_B_imgs, train_B[step_idx]], axis=0)
             # [Ad]
-            D_Loss = D.train_on_batch([Set_A, Set_B], dis_label)
+            D_A_Loss = D_A.train_on_batch(Set_A, dis_label)
+            D_B_Loss = D_B.train_on_batch(Set_B, dis_label)
             
             # Train Generator
-            # [Ad + 100*mae, Ad, mae]
-            G_Loss = A.train_on_batch([train_A[step_idx], train_B[step_idx]], 
-                                        [real_label, train_B[step_idx]])
+            # [Ad + 10*cyc + 0.5*idt, Ad, mae, idt]
+            # A_B2A = models.Model(inputs=B_img, outputs = [D_A_output, recon_B, id_B], name='GAN_A')
+            G_B2A_Loss = A_B2A.train_on_batch(train_B[step_idx], [real_label, train_B[step_idx], train_B[step_idx]])
 
-            g_total += G_Loss[0]
-            g_ad += G_Loss[1]
-            g_mae += G_Loss[2]
-            d_ad += D_Loss
+            G_A2B_Loss = A_A2B.train_on_batch(train_A[step_idx], [real_label, train_A[step_idx], train_A[step_idx]])
+            
+            g_a2b_total += G_A2B_Loss[0]
+            g_a2b_ad += G_A2B_Loss[1]
+            g_a2b_cyc += G_A2B_Loss[2]
+            g_a2b_idt += G_A2B_Loss[3]
+            d_a_ad += D_A_Loss
+
+            g_b2a_total += G_B2A_Loss[0]
+            g_b2a_ad += G_B2A_Loss[1]
+            g_b2a_cyc += G_B2A_Loss[2]
+            g_b2a_idt += G_B2A_Loss[3]
+            d_b_ad += D_B_Loss
+
             if i < num_iter:
-                epoch_progbar.update(i+1, [("G_Total", G_Loss[0])
-                                            ("G_Ad", G_Loss[1]), 
-                                            ("G_MAE", G_Loss[2]), 
-                                            ("D_Ad", D_Loss)
+                epoch_progbar.update(i+1, [("G_A2B_Total", G_A2B_Loss[0])
+                                            ("G_A2B_Ad", G_A2B_Loss[1]), 
+                                            ("G_A2B_Cyc", G_A2B_Loss[2]), 
+                                            ("G_A2B_Idt", G_A2B_Loss[3]), 
+                                            ("D_A_Ad", D_A_Loss),
+                                            ("G_B2A_Total", G_B2A_Loss[0])
+                                            ("G_B2A_Ad", G_B2A_Loss[1]), 
+                                            ("G_B2A_Cyc", G_B2A_Loss[2]), 
+                                            ("G_B2A_Idt", G_B2A_Loss[3]), 
+                                            ("D_B_Ad", D_B_Loss)
                                             ])
 
-        val_g_total = 0
-        val_g_ad = 0
-        val_g_mae = 0
+        A_A2B.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_A2B_params.h5"))
+        A_B2A.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_B2A_params.h5"))
 
-        for j, val_idx in enumerate(range(0, val_length, batch_size)):
-            val_label = np.ones([len(val_A[val_idx:val_idx+batch_size]), d_output_size, d_output_size, 1])
-            V_loss = A.test_on_batch(val_A[val_idx:val_idx+batch_size], 
-                                            [val_B[val_idx:val_idx+batch_size], val_label])
-            
-            val_g_total += V_loss[0]
-            val_g_ad += V_loss[1]
-            val_g_mae += V_loss[2]
-
-        epoch_progbar.update(i+1, [("Val_G_Total", val_g_total/num_val_iter), ("Val_G_Ad", val_g_ad/num_val_iter), ("Val_G_MAE", val_g_mae/num_val_iter)])
-
-        A.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_params.h5"))
-
+        # To do list
+        # Save Test Result
         train_float2int = np.concatenate((train_B[step_idx][0], fake_imgs[0]), axis=1)
         train_float2int = (train_float2int + 1) * 127.5
         train_float2int = cv.cvtColor(train_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
