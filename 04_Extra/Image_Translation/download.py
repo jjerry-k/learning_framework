@@ -1,15 +1,16 @@
 # %%
-import os
-import shutil
 import argparse
-import cv2 as cv
-from tqdm import tqdm
-from tensorflow.keras import utils
 
 def main(args):
+
+    import os
+    import cv2 as cv
+    from tqdm import tqdm
+    from tensorflow.keras import utils
+
     datatype = args.datatype
     dataset = args.dataset
-    if args.datatype == 'paired':
+    if datatype == 'paired':
         URL = f"https://people.eecs.berkeley.edu/~tinghuiz/projects/pix2pix/datasets/{dataset}.tar.gz"
         print(f"Start downloading the {dataset} dataset !")
         path_to_zip  = utils.get_file(f"{dataset}.tar", origin=URL, extract=True, cache_dir='./')

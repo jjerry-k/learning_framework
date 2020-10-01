@@ -1,37 +1,41 @@
-import os
+# To do list
+# Data Loader
+# Compare Pix2Pix datasets and CycleGAN datasets
+
 import argparse
-
-import cv2 as cv
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras import models, layers, losses, optimizers
-from tensorflow.keras.utils import Progbar
-
-from models import *
-
-tf.random.set_seed(42)
-
-# For Efficiency
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
-        print(e)
-
-def load_img(path, size):
-    img = cv.imread(path)
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    img = cv.resize(img, (size, size))
-    return img
 
 # strategy = tf.distribute.MirroredStrategy()
 # with strategy.scope():
 def main(args):
-    
+
+    import os
+    import cv2 as cv
+    import numpy as np
+    import tensorflow as tf
+    from tensorflow.keras import models, layers, losses, optimizers
+    from tensorflow.keras.utils import Progbar
+
+    from models import *
+
+    tf.random.set_seed(42)
+
+    # For Efficiency
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            print(e)
+
+    def load_img(path, size):
+        img = cv.imread(path)
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        img = cv.resize(img, (size, size))
+        return img
+
     print(f"Load {args.DATASET} dataset.....")
 
     datasets_root = "../../datasets" # Please edit your root path of datasets
@@ -39,18 +43,18 @@ def main(args):
     train_domain_A_path = os.path.join(datasets_root, args.DATASET, "train", "domain_A")
     train_domain_B_path = os.path.join(datasets_root, args.DATASET, "train", "domain_B")
 
-    val_domain_A_path = os.path.join(datasets_root, args.DATASET, "val", "domain_A")
-    val_domain_B_path = os.path.join(datasets_root, args.DATASET, "val", "domain_B")
-
     train_A = np.array([load_img(os.path.join(train_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_A_path))])/127.5 -1
     train_B = np.array([load_img(os.path.join(train_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_B_path))])/127.5 -1
-    
-    val_A = np.array([load_img(os.path.join(val_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_A_path))])/127.5 -1
-    val_B = np.array([load_img(os.path.join(val_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_B_path))])/127.5 -1
 
     print("\nTraining data shape")
     print(f"Domain A: {train_A.shape}")
     print(f"Domain B: {train_B.shape}")
+
+    val_domain_A_path = os.path.join(datasets_root, args.DATASET, "val", "domain_A")
+    val_domain_B_path = os.path.join(datasets_root, args.DATASET, "val", "domain_B")
+    
+    val_A = np.array([load_img(os.path.join(val_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_A_path))])/127.5 -1
+    val_B = np.array([load_img(os.path.join(val_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_B_path))])/127.5 -1
 
     print("\nValidation data shape")
     print(f"Domain A: {val_A.shape}")
@@ -115,12 +119,12 @@ def main(args):
     CKPT_PATH = './ckpt'
     os.makedirs(CKPT_PATH, exist_ok=True)
     
-    model_json = A_A.to_json()
-    with open(os.path.join(CKPT_PATH, "GAN_A.json"), "w") as json_file:
+    model_json = A_B2A.to_json()
+    with open(os.path.join(CKPT_PATH, "GAN_B2A.json"), "w") as json_file:
         json_file.write(model_json)
 
-    model_json = A_B.to_json()
-    with open(os.path.join(CKPT_PATH, "GAN_B.json"), "w") as json_file:
+    model_json = A_A2B.to_json()
+    with open(os.path.join(CKPT_PATH, "GAN_A2B.json"), "w") as json_file:
         json_file.write(model_json)
     
     print("\nModel Saved!\n")
@@ -199,31 +203,27 @@ def main(args):
         A_A2B.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_A2B_params.h5"))
         A_B2A.save_weights(os.path.join(CKPT_PATH, f"{epoch:04d}_B2A_params.h5"))
 
-        # To do list
-        # Save Test Result
-        train_float2int = np.concatenate((train_B[step_idx][0], fake_imgs[0]), axis=1)
+        train_float2int = np.concatenate((train_B[step_idx][0], fake_B_imgs[0]), axis=1)
         train_float2int = (train_float2int + 1) * 127.5
         train_float2int = cv.cvtColor(train_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
-        Train_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_train_result.jpg")
+        Train_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_A2B_result.jpg")
         cv.imwrite(Train_Result_PATH, train_float2int)
 
-        val_result = G.predict(val_A[:1])
-        val_float2int = np.concatenate((val_B[0], val_result[0]), axis=1)
-        val_float2int = (val_float2int + 1) * 127.5
-        val_float2int = cv.cvtColor(val_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
-        Val_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_val_result.jpg")
-        cv.imwrite(Val_Result_PATH, val_float2int)
+        train_float2int = np.concatenate((train_A[step_idx][0], fake_A_imgs[0]), axis=1)
+        train_float2int = (train_float2int + 1) * 127.5
+        train_float2int = cv.cvtColor(train_float2int.astype(np.uint8), cv.COLOR_RGB2BGR)
+        Train_Result_PATH = os.path.join(SAMPLE_PATH, f"{epoch+1:04d}_B2A_result.jpg")
+        cv.imwrite(Train_Result_PATH, train_float2int)
 
     print("Training Done ! ")
 
 if __name__ ==  "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--DATASET", default="facades", type=str, help="Dataset")
+    parser.add_argument("--DATAMODE", default="paired", type=str, help="Dataset mode")
     parser.add_argument("--IMG_SIZE", default=256, type=int, help="Imgae size")
     parser.add_argument("--EPOCHS", default=100, type=int, help="Number of Epoch")
     parser.add_argument("--BATCH_SIZE", default=32, type=int, help="Number of Batch")
-
-    
 
     args = parser.parse_args()
 
@@ -238,5 +238,15 @@ if __name__ ==  "__main__":
     print(f"Batch size : {args.BATCH_SIZE}")
     print("====================================================\n")
 
+    datatype_list = ['paired', 'unpaired']
+    assert args.DATAMODE in datatype_list, f"Please use dataset in {datatype_list}"
+    
+    if args.DATAMODE == 'paired':
+        data_list = ['cityscapes', 'edges2handbags', 'edges2shoes', 'facades', 'maps']
+    else:
+        data_list = ["apple2orange", "summer2winter_yosemite", "horse2zebra", "monet2photo", \
+                    "cezanne2photo", "ukiyoe2photo", "vangogh2photo", "iphone2dslr_flower", "ae_photos"]
+
+    assert args.DATASET in data_list, f"Please use dataset in {data_list}"
 
     main(args)
