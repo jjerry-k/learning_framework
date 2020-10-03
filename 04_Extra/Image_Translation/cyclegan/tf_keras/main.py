@@ -1,7 +1,3 @@
-# To do list
-# Data Loader
-# Compare Pix2Pix datasets and CycleGAN datasets
-
 import argparse
 
 # strategy = tf.distribute.MirroredStrategy()
@@ -40,23 +36,23 @@ def main(args):
 
     datasets_root = "../../datasets" # Please edit your root path of datasets
     
-    train_domain_A_path = os.path.join(datasets_root, args.DATASET, "train", "domain_A")
-    train_domain_B_path = os.path.join(datasets_root, args.DATASET, "train", "domain_B")
+    train_domain_A_path = os.path.join(datasets_root, args.DATASET, "trainA")
+    train_domain_B_path = os.path.join(datasets_root, args.DATASET, "trainB")
 
     train_A = np.array([load_img(os.path.join(train_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_A_path))])/127.5 -1
     train_B = np.array([load_img(os.path.join(train_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(train_domain_B_path))])/127.5 -1
 
-    print("\nTraining data shape")
+    print("\nTrain data shape")
     print(f"Domain A: {train_A.shape}")
     print(f"Domain B: {train_B.shape}")
 
-    val_domain_A_path = os.path.join(datasets_root, args.DATASET, "val", "domain_A")
-    val_domain_B_path = os.path.join(datasets_root, args.DATASET, "val", "domain_B")
+    val_domain_A_path = os.path.join(datasets_root, args.DATASET, "testA")
+    val_domain_B_path = os.path.join(datasets_root, args.DATASET, "testB")
     
     val_A = np.array([load_img(os.path.join(val_domain_A_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_A_path))])/127.5 -1
     val_B = np.array([load_img(os.path.join(val_domain_B_path, img), args.IMG_SIZE) for img in sorted(os.listdir(val_domain_B_path))])/127.5 -1
 
-    print("\nValidation data shape")
+    print("\nTest data shape")
     print(f"Domain A: {val_A.shape}")
     print(f"Domain B: {val_B.shape}")
 

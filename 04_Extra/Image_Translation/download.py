@@ -19,17 +19,26 @@ def main(args):
         PATH = os.path.join(os.path.dirname(path_to_zip), dataset)
         for path, subdir, files in os.walk(PATH):
             if "domain_A" in subdir or not len(files) or "domain" in path: continue
-            print(f"{path.split('/')[-1]} directory processing !")
-            os.makedirs(os.path.join(path, "domain_A"), exist_ok=True)
-            os.makedirs(os.path.join(path, "domain_B"), exist_ok=True)
+            
+            data = path.split('/')[-1]
+            print(f"{data} directory processing !")
+
+            # os.makedirs(os.path.join(path, "domain_A"), exist_ok=True)
+            # os.makedirs(os.path.join(path, "domain_B"), exist_ok=True)
+            os.makedirs(os.path.join(PATH, f"{data}A"), exist_ok=True)
+            os.makedirs(os.path.join(PATH, f"{data}B"), exist_ok=True)
+            
             for file in tqdm(files):
                 if file.split('.')[-1].lower() not in ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif']:continue
                 img_path = os.path.join(path, file)
                 img = cv.imread(img_path)
                 h, w, c = img.shape
-                cv.imwrite(os.path.join(path, "domain_A", file), img[:, :w//2])
-                cv.imwrite(os.path.join(path, "domain_B", file), img[:, w//2:])
+                # cv.imwrite(os.path.join(path, "domain_A", file), img[:, :w//2])
+                # cv.imwrite(os.path.join(path, "domain_B", file), img[:, w//2:])
+                cv.imwrite(os.path.join(PATH, f"{data}A", file), img[:, :w//2])
+                cv.imwrite(os.path.join(PATH, f"{data}B", file), img[:, w//2:])
                 os.remove(img_path)
+            os.removedirs(path)
     else : 
         URL = f"https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/{dataset}.zip"
         print(f"Start downloading the {dataset} dataset !")
