@@ -40,7 +40,7 @@ def generator_encoder_decoder(input_size = 256, A_channel = 3, B_channel = 3, na
     de7 = decoding_block(de6, 64, name=name+"_De7")
     de8 = decoding_block(de7, B_channel, use_bn=False, name=name+"_De8")
     
-    output = layers.Activation("tanh", name=name+name+"__Output")(de8)
+    output = layers.Activation("tanh", name=name+name+"_Output")(de8)
 
     return models.Model(inputs=input_layer, outputs=output, name=name)
 
