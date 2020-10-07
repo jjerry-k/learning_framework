@@ -16,4 +16,7 @@ python main.py --DATASET {dataset} --IMG_SIZE {img_size} --EPOCHS {epochs} --BAT
 
 
 ### To-Do List
-- [ ] CycleGAN model
+- [x] Pix2Pix model ver.TensorFlow
+- [ ] Pix2Pix model ver.PyTorch
+- [x] CycleGAN model ver.TensorFlow
+- [ ] CycleGAN model ver.PyTorch
