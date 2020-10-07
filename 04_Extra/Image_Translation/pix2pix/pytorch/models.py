@@ -41,17 +41,18 @@ class Generator_Encoder_Decoder(nn.Module):
         layer_list.append(Encoding_Block(A_channel, num_features, use_act=False, use_bn=False))
         prev_features = num_features
         
-        for i in range(1, 8):
-            output_channel = min(num_features * (i+1), 512)
+        for i in range(1, 7):
+            output_channel = min(num_features * (2**(i+1)), 512)
             layer_list.append(Encoding_Block(prev_features, output_channel))
             prev_features = output_channel
-        
+        layer_list.append(Encoding_Block(prev_features, prev_features, use_bn=False))
+
         for i in range(3):
             layer_list.append(Decoding_Block(prev_features, prev_features))
             layer_list.append(nn.Dropout(0.5))
 
         for i in range(4):
-            output_channel = prev_features // (i+1)
+            output_channel = prev_features // (2**(i+1))
             layer_list.append(Decoding_Block(prev_features, output_channel))
             prev_features = output_channel
 
@@ -62,3 +63,58 @@ class Generator_Encoder_Decoder(nn.Module):
 
     def forward(self, x):
         return self.net(x)
+
+
+class Generator_Unet(nn.Module):
+    def __init__(self, A_channel=3, B_channel=3, num_features=64):
+        super(Generator_Unet, self).__init__()
+        
+        self.en1 = Encoding_Block(A_channel, num_features, use_act=False, use_bn=False)
+        self.en2 = Encoding_Block(num_features, num_features*2)
+        self.en3 = Encoding_Block(num_features*2, num_features*4)
+        self.en4 = Encoding_Block(num_features*4, num_features*8)
+        self.en5 = Encoding_Block(num_features*8, num_features*8)
+        self.en6 = Encoding_Block(num_features*8, num_features*8)
+        self.en7 = Encoding_Block(num_features*8, num_features*8)
+        self.en8 = Encoding_Block(num_features*8, num_features*8, use_bn=False)
+
+        self.de1 = nn.Sequential(
+            Decoding_Block(num_features*8, num_features*8),
+            nn.Dropout(0.5)
+        )
+        self.de1 = nn.Sequential(
+            Decoding_Block(num_features*8, num_features*8),
+            nn.Dropout(0.5)
+        )
+        self.de1 = nn.Sequential(
+            Decoding_Block(num_features*8, num_features*8),
+            nn.Dropout(0.5)
+        )
+        self.de4 = Decoding_Block(num_features*8, num_features*8)
+        self.de5 = Decoding_Block(num_features*8, num_features*4)
+        self.de6 = Decoding_Block(num_features*4, num_features*2)
+        self.de7 = Decoding_Block(num_features*2, num_features)
+        self.de8 = nn.Sequential(
+            Decoding_Block(num_features, B_channel, use_bn=False),
+            nn.Tanh()
+        )
+    
+    def forward(self, x):
+        en1 = self.en1(x)
+        en2 = self.en2(en1)
+        en3 = self.en3(en2)
+        en4 = self.en4(en3)
+        en5 = self.en5(en4)
+        en6 = self.en6(en5)
+        en7 = self.en7(en6)
+        en8 = self.en8(en7)
+
+        de1 = torch.cat([self.de1(en8), en7], dim=1)
+        de2 = torch.cat([self.de2(de1), en6], dim=1)
+        de3 = torch.cat([self.de3(de2), en5], dim=1)
+        de4 = torch.cat([self.de4(de3), en4], dim=1)
+        de5 = torch.cat([self.de5(de4), en3], dim=1)
+        de6 = torch.cat([self.de6(de5), en2], dim=1)
+        de7 = torch.cat([self.de7(de6), en1], dim=1)
+        de8 = self.de8(de7)
+        return de8
