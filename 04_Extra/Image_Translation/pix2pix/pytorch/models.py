@@ -119,6 +119,22 @@ class Generator_Unet(nn.Module):
         de8 = self.de8(de7)
         return de8
 
+class Encoding_Block_Dis(nn.Module):
+    def __init__(self, in_channel=3, output_channel=32, ksize=4, strides=2, padding=1, use_act=True, use_bn=True):
+        super(Encoding_Block_Dis, self).__init__()
+        
+        layer_list = []
+        layer_list.append(nn.Conv2d(in_channel, output_channel, ksize, strides, padding))
+        if use_bn:
+            layer_list.append(nn.BatchNorm2d(output_channel))
+        if use_act:
+            layer_list.append(nn.LeakyReLU(0.2, inplace=True))
+        
+        self.module = nn.Sequetial(*layer_list)
+
+    def forward(self, x):
+        return self.module(x)
+        
 class Discriminator(nn.Module):
     def __init__(self, A_channel, B_channel, num_features=64, n_layers=0):
         super(Discriminator, self).__init__()
