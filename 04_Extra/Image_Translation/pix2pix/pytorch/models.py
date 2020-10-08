@@ -134,14 +134,14 @@ class Encoding_Block_Dis(nn.Module):
 
     def forward(self, x):
         return self.module(x)
-        
+
 class Discriminator(nn.Module):
     def __init__(self, A_channel, B_channel, num_features=64, n_layers=0):
         super(Discriminator, self).__init__()
 
         layer_list = []
 
-        if n_layer == 0:
+        if n_layers == 0:
             layer_list.append(Encoding_Block_Dis(A_channel+B_channel, num_features, ksize=1, strides=1, use_bn=False))
             layer_list.append(Encoding_Block_Dis(num_features, num_features*2, ksize=1, strides=1, use_bn=False))
             layer_list.append(Encoding_Block_Dis(num_features*2, 1, ksize=1, strides=1, use_act=False, use_bn=False))
