@@ -118,3 +118,34 @@ class Generator_Unet(nn.Module):
         de7 = torch.cat([self.de7(de6), en1], dim=1)
         de8 = self.de8(de7)
         return de8
+
+class Discriminator(nn.Module):
+    def __init__(self, A_channel, B_channel, num_features=64, n_layers=0):
+        super(Discriminator, self).__init__()
+
+        layer_list = []
+
+        if n_layer == 0:
+            layer_list.append(Encoding_Block_Dis(A_channel+B_channel, num_features, ksize=1, strides=1, use_bn=False))
+            layer_list.append(Encoding_Block_Dis(num_features, num_features*2, ksize=1, strides=1, use_bn=False))
+            layer_list.append(Encoding_Block_Dis(num_features*2, 1, ksize=1, strides=1, use_act=False, use_bn=False))
+            layer_list.append(nn.Sigmoid())
+        
+        else:
+            layer_list.append(Encoding_Block_Dis(A_channel+B_channel, num_features, use_bn=False))
+            
+            prev_features = num_features
+            for i in range(1, n_layers-1):
+                mul_fact = min(2**i, 8)
+                layer_list.append(Encoding_Block_Dis(prev_features, num_features*mul_fact))
+                prev_features = num_features*mul_fact
+            
+            mul_fact = min(2**(n_layers-1), 8)
+            layer_list.append(Encoding_Block(prev_features, num_features*mul_fact, strides=1))
+            layer_list.append(Encoding_Block(num_features*mul_fact, 1, strides=1, use_act=False, use_bn=False))
+            layer_list.append(nn.Sigmoid())
+        
+        self.net = nn.Sequential(*layer_list)
+
+    def forward(self, x):
+        return self.net(x)
