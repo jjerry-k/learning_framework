@@ -30,7 +30,3 @@ class VDSR(nn.Module):
     def forward(self, x):
         out = self.net(x)
         return out + x
-
-
-vdsr = VDSR()
-print(vdsr)
