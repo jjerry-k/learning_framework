@@ -40,8 +40,8 @@ val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
 def parse_image(filename, target_size, scale=3):
     # Load image & Preprocessing
     image = tfi.read_file(filename)
-    image = tfi.decode_jpeg(image)
-    image = tf.image.convert_image_dtype(image, tf.float32)/255.
+    image = tfimg.decode_jpeg(image)
+    image = tfimg.convert_image_dtype(image, tf.float32)/255.
     image = tfimg.rgb_to_yuv(image)[..., 0]
     image = tf.expand_dims(tfimg.random_crop(image, [target_size, target_size]), axis=-1)
 
