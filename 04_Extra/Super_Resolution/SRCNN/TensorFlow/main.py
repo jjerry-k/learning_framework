@@ -1,77 +1,105 @@
+# %%
 import os
 import numpy as np
 import tensorflow as tf
-
-from tensorflow import image as tfi
+from matplotlib import pyplot as plt
+from tensorflow import io as tfi
+from tensorflow import image as tfimg
 from tensorflow.keras import models, layers, losses, metrics, optimizers, callbacks
 from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.python.ops.array_ops import newaxis
+
 from model import *
 
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
+# For Efficiency
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        print(e)
+
+# %%
 # Data Loader
 ROOT = "../../datasets"
-data = "BSR/BSDS500/data/images/train"
-data_path = os.path.join(ROOT, data)
-img_list = sorted(os.listdir(data_path))
-val_ratio = 0.2
-n_imgs = len(img_list)
-input_size = 33
-output_size = 21
-batch_size = 8
+data = "BSR/BSDS500/data/images/"
+train_path = os.path.join(ROOT, data, "train")
+val_path = os.path.join(ROOT, data, "val")
+input_size = 132
+scale = 3
+batch_size = 32
 
-def image_reader(root, img_list, input_size, output_size, scale=3):
-    padding = (input_size - output_size)//2
-    while 1:
-        for img in img_list:
-            # =================
-            # Read & Preprocess
-            # =================
-            img = np.array(load_img(os.path.join(root, img), grayscale=True))[..., np.newaxis]
-            h, w, _ = img.shape
-            h, w = h//3 * h, w//3 * w
-            img = img[:h, :w]/255.
-            lab = img.copy()
+train_ds = tf.data.Dataset.list_files(os.path.join(train_path, '*.jpg'))
+val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
 
-            # Downsampling
-            img = tf.image.resize(img, (h//scale, w//scale), method='bicubic')
-            # Upsampling
-            img = tf.image.resize(img, (h, w), method='bicubic')
+def parse_image(filename, target_size, scale=3):
+    # Load image & Preprocessing
+    image = tfi.read_file(filename)
+    image = tfi.decode_jpeg(image)
+    image = tf.image.convert_image_dtype(image, tf.float32)/255.
+    image = tfimg.rgb_to_yuv(image)[..., 0]
+    image = tf.expand_dims(tfimg.random_crop(image, [target_size, target_size]), axis=-1)
 
-            for row in range(0, h-input_size+1, 14):
-                for col in range(0, w-input_size+1, 14):
-                    x = img[row:row+input_size, col:col+input_size]
-                    y = lab[row+padding:row+padding+output_size, col+padding:col+padding+output_size]
-                    yield x, y
+    # Set label image
+    label = image[6:-6, 6:-6]
 
-train_gen = image_reader(data_path, img_list[int(val_ratio*n_imgs):], input_size, output_size)
-train_ds = tf.data.Dataset.from_generator(lambda: train_gen, 
-                                            output_types = (tf.float64, tf.float64)
-                                            ).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE).repeat()
+    # Set 
 
-val_gen = image_reader(data_path, img_list[:int(val_ratio*n_imgs)], input_size, output_size)
-val_ds = tf.data.Dataset.from_generator(lambda: val_gen, 
-                                            output_types = (tf.float64, tf.float64)
-                                            ).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE).repeat()
+    image = tfimg.resize(image, [target_size//scale, target_size//scale], 'bicubic')
+    image = tfimg.resize(image, [target_size, target_size], 'bicubic')
 
+    return image, label
+
+train_ds = train_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
+train_ds = train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+val_ds = val_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
+val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+# %%
 # Defile psnr, ssim for metrics
-class PSNR():
+class Metric():
     def __init__(self, max_val):
         self.max_val = max_val
     
-    def run(self, y_true, y_pred):
-        return tf.reduce_mean(tfi.psnr(y_true, y_pred, max_val=self.max_val))
+    def psnr(self, y_true, y_pred):
+        return tf.reduce_mean(tfimg.psnr(y_true, y_pred, max_val=self.max_val))
 
-class SSIM():
-    def __init__(self, max_val):
-        self.max_val = max_val
-    
-    def run(self, y_true, y_pred):
-        return tf.reduce_mean(tfi.ssim(y_true, y_pred, max_val=self.max_val))
+    def ssim(self, y_true, y_pred):
+        return tf.reduce_mean(tfimg.ssim(y_true, y_pred, max_val=self.max_val))
+
+# Define plot callback
+class PlotCallback(callbacks.Callback):
+    def __init__(self):
+        super(PlotCallback, self).__init__()
+        for i in val_ds.take(1):
+            self.test_img, self.test_lab = i[0], i[1]
+
+    def on_epoch_end(self, epoch, logs=None):
+        if (epoch+1) % 10 == 0:
+            pred = self.model(self.test_img)
+            plt.subplot(131)
+            plt.imshow(self.test_img[0, ..., 0], cmap='gray')
+            plt.subplot(132)
+            plt.imshow(pred[0, ..., 0], cmap='gray')
+            plt.subplot(133)
+            plt.imshow(self.test_lab[0, ..., 0], cmap='gray')
+            plt.show()
 
 # Build model
 model = SRCNN()
 
 model.compile(loss = losses.MeanSquaredError(), 
-                optimizers = optimizers.SGD(learning_rate=0.0001, momentum=0.99),
-                metrics=[PSNR(1).run, SSIM(1).run])
+                optimizer = optimizers.Adam(learning_rate=0.0001),
+                metrics=[Metric(1).psnr, Metric(1).ssim])
+# %%
+model.fit(train_ds, epochs=50, validation_data=val_ds, callbacks = [PlotCallback()])
+
+# %%
+
 # %%
