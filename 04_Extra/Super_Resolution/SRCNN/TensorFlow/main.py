@@ -7,6 +7,7 @@ from tensorflow import io as tfi
 from tensorflow import image as tfimg
 from tensorflow.keras import models, layers, losses, metrics, optimizers, callbacks
 from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing import image_dataset_from_directory
 
 from model import *
 
@@ -28,38 +29,70 @@ if gpus:
 # Data Loader
 ROOT = "../../datasets"
 data = "BSR/BSDS500/data/images/"
+root_dir = os.path.join(ROOT, "BSR/BSDS500/data/images")
 train_path = os.path.join(ROOT, data, "train")
 val_path = os.path.join(ROOT, data, "val")
 input_size = 132
 scale = 3
 batch_size = 32
 
-train_ds = tf.data.Dataset.list_files(os.path.join(train_path, '*.jpg'))
-val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
+train_ds = image_dataset_from_directory(
+    root_dir,
+    batch_size=batch_size,
+    image_size=(input_size*scale, input_size*scale),
+    validation_split=0.2,
+    subset="training",
+    seed=42, 
+    label_mode=None,
+)
 
-def parse_image(filename, target_size, scale=3):
-    # Load image & Preprocessing
-    image = tfi.read_file(filename)
-    image = tfimg.decode_jpeg(image)
-    image = tfimg.convert_image_dtype(image, tf.float32)/255.
-    image = tfimg.rgb_to_yuv(image)[..., 0]
-    image = tf.expand_dims(tfimg.random_crop(image, [target_size, target_size]), axis=-1)
+val_ds = image_dataset_from_directory(
+    root_dir,
+    batch_size=batch_size,
+    image_size=(input_size*scale, input_size*scale),
+    validation_split=0.2,
+    subset="validation",
+    seed=42,
+    label_mode=None,
+)
 
-    # Set label image
-    label = image[6:-6, 6:-6]
+def process_input(image, input_size, scale):
+    image = image / 255.0
+    image = tf.image.rgb_to_yuv(image)
+    last_dimension_axis = len(image.shape) - 1
+    y, u, v = tf.split(image, 3, axis=last_dimension_axis)
+    label = y
+    image = tf.image.resize(y, [input_size//scale, input_size//scale], method="bicubic")
+    image = tf.image.resize(image, [input_size, input_size], method="bicubic")
 
-    # Set 
+    return image, label[:,6:-6, 6:-6, :]
 
-    image = tfimg.resize(image, [target_size//scale, target_size//scale], 'bicubic')
-    image = tfimg.resize(image, [target_size, target_size], 'bicubic')
+# train_ds = tf.data.Dataset.list_files(os.path.join(train_path, '*.jpg'))
+# val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
 
-    return image, label
+# def parse_image(filename, target_size, scale=3):
+#     # Load image & Preprocessing
+#     image = tfi.read_file(filename)
+#     image = tfimg.decode_jpeg(image)
+#     image = tfimg.convert_image_dtype(image, tf.float32)/255.
+#     image = tfimg.rgb_to_yuv(image)[..., 0]
+#     image = tf.expand_dims(tfimg.random_crop(image, [target_size, target_size]), axis=-1)
 
-train_ds = train_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
-train_ds = train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+#     # Set label image
+#     label = image[6:-6, 6:-6]
 
-val_ds = val_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
-val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
+#     # Set 
+
+#     image = tfimg.resize(image, [target_size//scale, target_size//scale], 'bicubic')
+#     image = tfimg.resize(image, [target_size, target_size], 'bicubic')
+
+#     return image, label
+
+# train_ds = train_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
+# train_ds = train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+# val_ds = val_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
+# val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
 
 # %%
 # Defile psnr, ssim for metrics
