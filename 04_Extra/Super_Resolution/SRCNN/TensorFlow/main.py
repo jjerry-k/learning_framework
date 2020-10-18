@@ -39,7 +39,7 @@ batch_size = 32
 train_ds = image_dataset_from_directory(
     root_dir,
     batch_size=batch_size,
-    image_size=(input_size*scale, input_size*scale),
+    image_size=(input_size, input_size),
     validation_split=0.2,
     subset="training",
     seed=42, 
@@ -49,7 +49,7 @@ train_ds = image_dataset_from_directory(
 val_ds = image_dataset_from_directory(
     root_dir,
     batch_size=batch_size,
-    image_size=(input_size*scale, input_size*scale),
+    image_size=(input_size, input_size),
     validation_split=0.2,
     subset="validation",
     seed=42,
@@ -62,10 +62,18 @@ def process_input(image, input_size, scale):
     last_dimension_axis = len(image.shape) - 1
     y, u, v = tf.split(image, 3, axis=last_dimension_axis)
     label = y
-    image = tf.image.resize(y, [input_size//scale, input_size//scale], method="bicubic")
-    image = tf.image.resize(image, [input_size, input_size], method="bicubic")
+    image = tf.image.resize(y, [input_size//scale, input_size//scale], method="area")
+    image = tf.image.resize(image, [input_size, input_size], method="area")
 
-    return image, label[:,6:-6, 6:-6, :]
+    return image, label[:, 6:-6, 6:-6, :]
+
+train_ds = train_ds.map(lambda x: process_input(x, input_size, scale))
+
+train_ds = train_ds.prefetch(tf.data.experimental.AUTOTUNE)
+
+val_ds = val_ds.map(lambda x: process_input(x, input_size, scale))
+
+val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
 
 # train_ds = tf.data.Dataset.list_files(os.path.join(train_path, '*.jpg'))
 # val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
@@ -110,17 +118,26 @@ class Metric():
 class PlotCallback(callbacks.Callback):
     def __init__(self):
         super(PlotCallback, self).__init__()
+        for i in train_ds.take(1):
+            self.train_img, self.train_lab = i[0], i[1]
         for i in val_ds.take(1):
             self.test_img, self.test_lab = i[0], i[1]
 
     def on_epoch_end(self, epoch, logs=None):
-        if (epoch+1) % 10 == 0:
-            pred = self.model(self.test_img)
-            plt.subplot(131)
-            plt.imshow(self.test_img[0, ..., 0], cmap='gray')
-            plt.subplot(132)
+        if (epoch+1) % 5 == 0:
+            pred = self.model(self.train_img)
+            plt.subplot(231)
+            plt.imshow(self.train_img[0, ..., 0], cmap='gray')
+            plt.subplot(232)
             plt.imshow(pred[0, ..., 0], cmap='gray')
-            plt.subplot(133)
+            plt.subplot(233)
+            plt.imshow(self.train_lab[0, ..., 0], cmap='gray')
+            pred = self.model(self.test_img)
+            plt.subplot(234)
+            plt.imshow(self.test_img[0, ..., 0], cmap='gray')
+            plt.subplot(235)
+            plt.imshow(pred[0, ..., 0], cmap='gray')
+            plt.subplot(236)
             plt.imshow(self.test_lab[0, ..., 0], cmap='gray')
             plt.show()
 
@@ -132,7 +149,5 @@ model.compile(loss = losses.MeanSquaredError(),
                 metrics=[Metric(1).psnr, Metric(1).ssim])
 # %%
 model.fit(train_ds, epochs=50, validation_data=val_ds, callbacks = [PlotCallback()])
-
-# %%
 
 # %%
