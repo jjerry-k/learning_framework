@@ -75,33 +75,6 @@ val_ds = val_ds.map(lambda x: process_input(x, input_size, scale))
 
 val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
 
-# train_ds = tf.data.Dataset.list_files(os.path.join(train_path, '*.jpg'))
-# val_ds = tf.data.Dataset.list_files(os.path.join(val_path, '*.jpg'))
-
-# def parse_image(filename, target_size, scale=3):
-#     # Load image & Preprocessing
-#     image = tfi.read_file(filename)
-#     image = tfimg.decode_jpeg(image)
-#     image = tfimg.convert_image_dtype(image, tf.float32)/255.
-#     image = tfimg.rgb_to_yuv(image)[..., 0]
-#     image = tf.expand_dims(tfimg.random_crop(image, [target_size, target_size]), axis=-1)
-
-#     # Set label image
-#     label = image[6:-6, 6:-6]
-
-#     # Set 
-
-#     image = tfimg.resize(image, [target_size//scale, target_size//scale], 'bicubic')
-#     image = tfimg.resize(image, [target_size, target_size], 'bicubic')
-
-#     return image, label
-
-# train_ds = train_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
-# train_ds = train_ds.prefetch(tf.data.experimental.AUTOTUNE)
-
-# val_ds = val_ds.map(lambda x: parse_image(x, input_size, scale)).batch(batch_size)
-# val_ds = val_ds.prefetch(tf.data.experimental.AUTOTUNE)
-
 # %%
 # Defile psnr, ssim for metrics
 class Metric():
