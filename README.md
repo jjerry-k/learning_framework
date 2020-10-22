@@ -2,6 +2,10 @@
 
 - 본 Repository 는 지극히 개인적인 공부용이라 모든 코드들이 불친절하고 가독성이 좋지 않습니다.
 - 대부분 Network만 구성해볼뿐 학습을 해보진 않습니다. (물론 추후에 학습도 해볼 예정)
+- 현재 버전
+    - TensorFlow: 2.3.1
+    - PyTorch: 1.6
+    - MXNet: 1.5
 
 ---
 ## Framework list 
@@ -134,10 +138,12 @@
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/LSGAN/PyTorch.py)
 
 3. DCGAN  
-[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/tf_keras.py),  [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/PyTorch.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/tf_keras.py),  
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/DCGAN/PyTorch.py)
 
 4. CGAN  
-[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/tf_keras.py),  [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/PyTorch.py)
+[tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/tf_keras.py),  
+[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/03_Advance/GAN/CGAN/PyTorch.py)
 
 
 ### 04 Extra
