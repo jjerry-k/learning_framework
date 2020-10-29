@@ -59,3 +59,18 @@ def Upsampler(x, scale, filters, use_bias=True, use_bn=False, act="relu", name="
         raise NotImplementedError
 
     return out
+
+
+def EDSR(img_channel=3, rgb_range=255, filters=64, n_resblocks=4, res_scale=1, act='relu', scale=4, name="EDSR"):
+    input_layer = layers.Input(shape=(None, None, img_channel), name=name+"_Input")
+    out = MeanShift(input_layer, rgb_range, name=name+"_MeanShift_Top")
+    out = layers.Conv2D(filters, 3, padding="same", name=name+"_Conv1")(out)
+    x = out
+    for i in range(n_resblocks):
+        out = ResBlock(out, filters, kernel_size, act=act, res_scale=res_scale, name=name+f"_ResBlock_{i+1}")
+    out = layers.Conv2D(filters, 3, padding="same", name=name+"_Conv2")(out)
+    out = layers.Add(name=name+"_Add")([out, x])
+    out = Upsampler(out, scale, filters, act=False, name=name+"_Upsampler")
+    out = layers.Conv2D(img_channel, 3, padding="same", name=name+"_Conv3")(out)
+    out = MeanShift(out, rgb_range, sign=1, name=name+"_MeanShift_Bot")
+    return models.Model(inputs=input_layer, outputs=out, name=name)
