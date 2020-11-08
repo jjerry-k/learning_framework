@@ -149,13 +149,16 @@
 ### 04 Extra
 #### Super Resolution
 1. SRCNN  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/SRCNN/PyTorch.py)
+[TensorFlow](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/TensorFlow), [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/SRCNN/PyTorch)
 
 2. VDSR  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/VDSR/PyTorch.py)
+[TensorFlow](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/TensorFlow), [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/VDSR/PyTorch)
 
 3. EDSR  
-[PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/PyTorch.py)
+[TensorFlow](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/TensorFlow), [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/PyTorch)
+
+4. SubPixel  
+[TensorFlow](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/TensorFlow), [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/SubPixel/PyTorch)
 
 #### Image Translation
 1. Neural Style Transfer  
