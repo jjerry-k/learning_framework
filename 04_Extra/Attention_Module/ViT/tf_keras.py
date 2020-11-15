@@ -148,3 +148,10 @@ class Encoder(tf.keras.layers.Layer):
         x = self.enc_layers[i](x, training, mask)
 
         return x  # (batch_size, input_seq_len, d_model)
+
+
+# VisionTransformer
+
+# image(B, H, W, 3) -> split patch(B, rows, p_h, cols, p_w, c) -> Transpose(B, rows, cols, p_h, p_w, c) -> Stack(B, rows, cols, p_h*p_w*c)
+# -> Encoder(Positional Encoding + input -> dropout -> n_layer * Encoding block)
+
