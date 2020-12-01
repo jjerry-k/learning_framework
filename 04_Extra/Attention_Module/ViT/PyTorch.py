@@ -3,8 +3,17 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
+# Image(B, 3, H, W) 
+# -> Patch (B, P, 3, H_P, W_P) -> (B, P, 3*H_P*W_P)
+# -> Linear Projection (MLP) (B, P, D) 
+# -> Patch Embedding + Position Embedding + cls embedding 
+# -> Transformer Encoder x L -> MLP -> Classification
 # %%
 class ScaledDotProductAttention(nn.Module):
+    # (B, D, D) -> (B, D, D_v)
+    # q, k, v: 3 dim
+    # q shape == k shape (B, D1, D_k)
+    # v shape (B, D1, D_v)
 
     def forward(self, query, key, value):
         dk = key.size()[-1]
@@ -14,7 +23,7 @@ class ScaledDotProductAttention(nn.Module):
         return out, attention
 
 y = torch.rand(1, 28, 28)
-out = ScaledDotProductAttention()(y, y, y)
+out = ScaledDotProductAttention()(y, y, torch.rand(1, 28, 28))
 out[0].shape, out[1].shape
 
 # %%
@@ -70,7 +79,7 @@ class MultiHeadAttention(nn.Module):
         return out, attention_weights # (batch_size, seq_len_q, features), (batch_size, num_head, seq_len_q, seq_len_k)
 
 temp_mha = MultiHeadAttention(features=28, num_heads=4)
-out, attn = temp_mha(q=torch.rand(1, 28, 28), k=y, v=y)
+out, attn = temp_mha(q=y, k=y, v=torch.rand(1, 28, 28))
 print(out.shape, attn.shape)
 
 # %%
@@ -176,22 +185,19 @@ class ViT(nn.Module):
             for j in range(slices):
                 out.append(img[:,:,i*self.patch_size:(i+1)*self.patch_size, j*self.patch_size:(j+1)*self.patch_size].reshape(batch_size, -1))
         out = torch.stack(out, dim=1)
+        
         out = self.patch_to_embed(out)
-
+        
         b, n, _ = out.shape
 
-        x += self.pos_embedding[:, :(n + 1)]
-        x = self.dropout(x)
+        out += self.pos_embed[:, :n]
+        out = self.dropout(out)
 
-        x = self.transformer(x)
+        out = self.transformer_encoder(out)
 
-        x = self.to_cls_token(x[:, 0])
-        return self.mlp_head(x)
+        out = self.to_cls_token(out[:, 0])
+        return self.mlp_head(out)
 
 # %%
 sample_ViT = ViT(256, 3, 16, 128, 10, 6, 8, 16) 
-
-# %%
 sample_ViT(torch.randn(1, 3, 256, 256)).shape
-
-# %%
