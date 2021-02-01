@@ -29,6 +29,11 @@
 - Gluon, Module 로 작성하려함.
 - 매우...진행이 느릴 것으로 예상.
 
+### JAX
+- 배포 :  Google
+- 공식 홈페이지 : https://github.com/google/jax
+- 그냥....써보려고....
+- Transformer가 jax 기반이길래...
 
 ## Example List
 
@@ -38,6 +43,7 @@
 [tf.nn](https://github.com/jjerry-k/learning_framework/blob/master/01_Basic/Linear_Regression/tf_nn.py), 
 [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/01_Basic/Linear_Regression/PyTorch.py), 
 [MXNet Gluon](https://github.com/jjerry-k/learning_framework/blob/master/01_Basic/Linear_Regression/MXNet_Gluon.py)
+[JAX](https://github.com/jjerry-k/learning_framework/blob/master/01_Basic/Linear_Regression/ver_jax.py)
 
 - Logistic Regression  
 [tf.keras](https://github.com/jjerry-k/learning_framework/blob/master/01_Basic/Logistic_Regression/tf_keras.py), 
