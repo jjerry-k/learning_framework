@@ -10,7 +10,7 @@ class NormLayer(nn.Module):
         if norm_type == "BN":
             self.norm = nn.BatchNorm2d(features, affine=True, track_running_stats=True)
         elif norm_type == "IN":
-            self.norm = nn.InstanceNorm1d(features, affine=False, track_running_stats=False)
+            self.norm = nn.InstanceNorm2d(features, affine=False, track_running_stats=False)
         elif norm_type == "None":
             self.norm = nn.Identity()
         else:
@@ -19,6 +19,25 @@ class NormLayer(nn.Module):
     def forward(self, x):
         x = self.norm(x)
         return x
+
+class ResidualBlock(nn.Module):
+    def __init__(self, features, norm_type):
+        super(ResidualBlock, self).__init__()
+        layers = []
+        layers.append(nn.ReflectionPad2d(1))
+        layers.append(nn.Conv2d(features, features, kernel_size=3))
+        layers.append(NormLayer(features, norm_type))
+        layers.append(nn.ReLU(True))
+
+        layers.append(nn.ReflectionPad2d(1))
+        layers.append(nn.Conv2d(features, features, kernel_size=3))
+        layers.append(NormLayer(features, norm_type))
+
+        self.block = nn.Sequential(*layers)
+
+    def forward(self, x):
+        out = x + self.block(x)
+        return out
 
 class Generator(nn.Module):
     def __init__(self, in_channels, out_channels, features, norm_type, n_downsampling, n_blocks):
@@ -44,8 +63,7 @@ class Generator(nn.Module):
         multiply = 2 ** n_downsampling
         curr_channels = features * multiply
         for i in range(n_blocks):
-            # layers.append(ResidualBlock(curr_channels, norm_type))
-            pass
+            layers.append(ResidualBlock(curr_channels, norm_type))
         
         # Upsampling
         for i in range(n_downsampling):
@@ -80,14 +98,14 @@ class Discriminator(nn.Module):
 
         new_channels = features * 2
         prev_channels = features
-        for i in range(1, n_layers):
+        for i in range(1, n_blocks):
             layers.append(nn.Conv2d(prev_channels, new_channels, kernel_size=4, stride=2, padding=1))
             layers.append(NormLayer(new_channels, norm_type))
             layers.append(nn.LeakyReLU(0.2, True))
             prev_channels = new_channels
             new_channels = min(features * (2**(i+1)), 512)
 
-        layers.append(prev_channels, 1, kernel_size=4, stride=1, padding=1)
+        layers.append(nn.Conv2d(prev_channels, 1, kernel_size=4, stride=1, padding=1))
 
         self.model = nn.Sequential(*layers)
 
