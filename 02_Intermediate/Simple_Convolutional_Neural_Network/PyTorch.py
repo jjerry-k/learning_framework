@@ -46,6 +46,7 @@ class Model(nn.Module):
         X = self.layer2(X)
         X = X.reshape(X.size(0), -1)
         X = self.fc(X)
+        #print(X.shape)
         return X
 
 model = Model().to(device)
