@@ -7,3 +7,5 @@ def set_requires_grad(models:list, requires_grad:bool) -> None:
             for param in model.parameters():
                 param.requires_grad = requires_grad
 
+
+# def train_generator(models:list, ):

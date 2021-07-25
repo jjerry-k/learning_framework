@@ -1,6 +1,9 @@
 # %%
 import itertools
+import numpy as np
 from tqdm import tqdm
+from PIL import Image
+from matplotlib import pyplot as plt
 
 import torch
 from torch import nn
@@ -14,7 +17,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 # =================
 # Set Configuration
 # =================
-PATH= "../../datasets/summer2winter_yosemite"
+PATH= "../../datasets/horse2zebra"
 INPUTSIZE= 256
 BATCHSIZE= 4
 NUMWORKER= 2
@@ -60,7 +63,7 @@ for epoch in range(EPOCHS):
     G_BtoA.train()
     D_B.train()
     D_A.train()
-    with tqdm(len(dataloaders['train'])) as t:
+    with tqdm(total=len(dataloaders['train'])) as t:
 
         t.set_description(f"Training Phase")
         for step, (a_img, b_img) in enumerate(dataloaders['train']):
@@ -75,32 +78,6 @@ for epoch in range(EPOCHS):
             recon_B = G_AtoB(fake_A)
             idt_B = G_BtoA(a_img)
 
-            # Training Generator
-            set_requires_grad([D_A, D_B], False)
-            
-            fake_A_pred = D_A(fake_A)
-            fake_A_label = torch.ones_like(fake_A_pred)
-            loss_fake_A = GANLoss(fake_A_pred, fake_A_label)
-            cycle_A = CycleLoss(a_img, recon_A)
-            identity_A = IdentityLoss(b_img, idt_A)
-            loss_A = loss_fake_A + 10*(cycle_A + 0.5*identity_A)
-
-            fake_B_pred = D_A(fake_B)
-            fake_B_label = torch.ones_like(fake_B_pred)
-            loss_fake_B = GANLoss(fake_B_pred, fake_B_label)
-            cycle_B = CycleLoss(b_img, recon_B)
-            identity_B = IdentityLoss(a_img, idt_B)
-            loss_B = loss_fake_B + 10*(cycle_B + 0.5*identity_B)
-
-            Gen_loss = loss_A + loss_B
-            
-            optimizer_G_AtoB.zero_grad()
-            optimizer_G_BtoA.zero_grad()
-            Gen_loss.backward()
-            # loss_A.backward()
-            # loss_B.backward()
-            optimizer_G_AtoB.step()
-            optimizer_G_BtoA.step()
 
             # Training Discriminator
             set_requires_grad([D_A, D_B], True)
@@ -127,36 +104,91 @@ for epoch in range(EPOCHS):
             optimizer_D_A.step()
 
 
+            # Training Generator
+            set_requires_grad([D_A, D_B], False)
+            
+            fake_A_pred = D_A(fake_A)
+            fake_A_label = torch.ones_like(fake_A_pred)
+            loss_fake_A = GANLoss(fake_A_pred, fake_A_label)
+            cycle_A = CycleLoss(a_img, recon_A)
+            identity_A = IdentityLoss(b_img, idt_A)
+            loss_A = loss_fake_A + 10*(cycle_A + 0.5*identity_A)
+
+            fake_B_pred = D_A(fake_B)
+            fake_B_label = torch.ones_like(fake_B_pred)
+            loss_fake_B = GANLoss(fake_B_pred, fake_B_label)
+            cycle_B = CycleLoss(b_img, recon_B)
+            identity_B = IdentityLoss(a_img, idt_B)
+            loss_B = loss_fake_B + 10*(cycle_B + 0.5*identity_B)
+
+            Gen_loss = loss_A + loss_B
+            
+            optimizer_G_AtoB.zero_grad()
+            optimizer_G_BtoA.zero_grad()
+            Gen_loss.backward()
+            optimizer_G_AtoB.step()
+            optimizer_G_BtoA.step()
+
             t.set_postfix(
                 {"GAN Loss": (loss_D_A.item() + loss_D_B.item()) * 0.5, 
                 "Cycle Loss": (cycle_A.item() + cycle_B.item()) * 0.5, 
                 "Identity Loss": (identity_A.item() + identity_B.item()) * 0.5})
             t.update()
 
+            
         
     G_AtoB.eval()
     G_BtoA.eval()
     D_B.eval()
     D_A.eval()
     
-    with tqdm(len(dataloaders['test'])) as t:
+    with tqdm(total=len(dataloaders['test'])) as t:
         t.set_description(f"Test Phase")
         with torch.no_grad():
 
             for step, (a_img, b_img) in enumerate(dataloaders['test']):
                 a_img = a_img.to(device)
                 b_img = b_img.to(device)
-                
+
                 fake_B = G_AtoB(a_img)
                 recon_A = G_BtoA(fake_B)
 
                 fake_A = G_BtoA(b_img)
                 recon_B = G_AtoB(fake_A)
                 
+                # =================
+                a_img = a_img.detach().cpu().numpy()
+                b_img = b_img.detach().cpu().numpy()
+
+                fake_B = fake_B.detach().cpu().numpy()
+                fake_A = fake_A.detach().cpu().numpy()
+
+
                 # Code
 
                 t.set_postfix({"Val GAN Loss": step, "Val Cycle Loss": step, "Val Identity Loss": step})
                 t.update()
+                break
+            # a_img = a_img.transpose(0, 2, 3, 1)
+            # fake_A = fake_A.transpose(0, 2, 3, 1)
 
+            # b_img = b_img.transpose(0, 2, 3, 1)
+            # fake_B = fake_B.transpose(0, 2, 3, 1)
+
+            # A_result = np.zeros([256*2, 256*4, 3])
+            # B_result = np.zeros([256*2, 256*4, 3])
+            # for i in range(4):
+            #     start = i*256
+            #     A_result[:256, start:start+256] = a_img[i]
+            #     A_result[256:, start:start+256] = np.maximum(fake_B[i], 0)
+            #     B_result[:256, start:start+256] = b_img[i]
+            #     B_result[256:, start:start+256] = np.maximum(fake_A[i], 0)
+
+
+            # plt.imshow(A_result)
+            # plt.show()
+            
+            # plt.imshow(B_result)
+            # plt.show()
     print("")
 # %%

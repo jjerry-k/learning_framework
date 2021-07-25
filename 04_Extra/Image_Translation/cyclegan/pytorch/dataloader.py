@@ -26,11 +26,11 @@ class BaseDataset(Dataset):
         B_idx = random.randint(0, len(self.B_list)-1)
 
         A_image = Image.open(os.path.join(self.A_path, self.A_list[A_idx]))
-        if len(A_image.getbands()) > 3:
+        if len(A_image.getbands()) != 3:
             A_image = A_image.convert("RGB")
 
         B_image = Image.open(os.path.join(self.B_path, self.B_list[B_idx]))
-        if len(B_image.getbands()) > 3:
+        if len(B_image.getbands()) != 3:
             B_image = B_image.convert("RGB")
         
         if self.transform:
