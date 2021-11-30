@@ -1,3 +1,5 @@
+# **현재 리뉴얼 중입니다!**
+
 # Learning Python A.I Framework
 
 - 본 Repository 는 지극히 개인적인 공부용이라 모든 코드들이 불친절하고 가독성이 좋지 않습니다.
@@ -10,17 +12,17 @@
 ---
 ## Framework list 
 
-### TensorFlow
-- 배포 : Google
-- 공식 홈페이지 : https://www.tensorflow.org
-- 주 사용 프레임워크
-- Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
-- 1.x -> 2.x 로 변겅중.
-
 ### PyTorch
 - 배포 : Facebook
 - 공식 홈페이지 : https://pytorch.org
+- 주 사용 프레임워크
+
+### TensorFlow
+- 배포 : Google
+- 공식 홈페이지 : https://www.tensorflow.org
 - 서브 프레임워크
+- Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
+- 1.x -> 2.x 로 변겅중.
 
 ### MXNet
 - 배포 : Apache
@@ -153,6 +155,12 @@
 
 
 ### 04 Extra
+
+#### Data Loading
+[PyTorch](04_Extra/DataLoading/PyTorch)
+
+[TensorFlow]
+
 #### Super Resolution
 1. SRCNN  
 [TensorFlow](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/EDSR/TensorFlow), [PyTorch](https://github.com/jjerry-k/learning_framework/blob/master/04_Extra/Super_Resolution/SRCNN/PyTorch)
