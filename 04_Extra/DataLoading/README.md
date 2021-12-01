@@ -9,6 +9,7 @@ Framework 별로 Classification을 수행할 때 Data를 Load 하는 방법에 �
 - `daisy`, `dandelion`, `roses`, `sunflowers`, `tulips` 와 같이 5개의 class로 구성된 dataset입니다.
 - `flower_download.py` script를 실행하면 dataset setting은 자동으로 됩니다.
 - 다른 데이터로 직접 setting을 하고 싶으시다면 data download 후 다음과 같이 Directory tree를 구성합니다.
+- `train` 과 `validation` 내의 class 수는 동일해야합니다.
 ```
 dataset name
 │
