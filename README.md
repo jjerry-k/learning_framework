@@ -11,6 +11,10 @@
 
 ---
 ## Framework list 
+- PyTorch, TensorFlow, MXNet, JAX
+
+<details>
+<summary> Additional information </summary>
 
 ### PyTorch
 - 배포 : Facebook
@@ -22,7 +26,7 @@
 - 공식 홈페이지 : https://www.tensorflow.org
 - 서브 프레임워크
 - Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
-- 1.x -> 2.x 로 변겅중.
+- 1.x -> 2.x 로 변경중.
 
 ### MXNet
 - 배포 : Apache
@@ -37,41 +41,54 @@
 - 그냥....써보려고....
 - Transformer가 jax 기반이길래...
 
+</details>
+
 ## Example List
 
 ### 01 Basic Usage
 
-- Linear Regression  
+<details>
+<summary> Contents </summary>
+
+1. Linear Regression  
 [tf.keras](01_Basic/Linear_Regression/tf_keras.py),
 [tf.nn](01_Basic/Linear_Regression/tf_nn.py), 
 [PyTorch](01_Basic/Linear_Regression/PyTorch.py), 
-[MXNet Gluon](01_Basic/Linear_Regression/MXNet_Gluon.py)
+[MXNet Gluon](01_Basic/Linear_Regression/MXNet_Gluon.py),
 [JAX](01_Basic/Linear_Regression/ver_jax.py)
 
-- Logistic Regression  
+2. Logistic Regression  
 [tf.keras](01_Basic/Logistic_Regression/tf_keras.py), 
 [tf.nn](01_Basic/Logistic_Regression/tf_nn.py), 
 [PyTorch](01_Basic/Logistic_Regression/PyTorch.py), 
 [MXNet Gluon](01_Basic/Logistic_Regression/MXNet_Gluon.py)
 
+</details>
+
 ### 02 Intermediate
-- Multi Layer Network  
+
+<details>
+<summary> Contents </summary>
+
+1. Multi Layer Network  
 [tf.keras](02_Intermediate/Multi_Layer_Neural_Network/tf_keras.py), 
 [tf.nn](02_Intermediate/Multi_Layer_Neural_Network/tf_nn.py), 
-[PyTorch](02_Intermediate/Multi_Layer_Neural_Network/PyTorch.py) 
+[PyTorch](02_Intermediate/Multi_Layer_Neural_Network/PyTorch.py), 
 [MXNet Gluon](02_Intermediate/Multi_Layer_Neural_Network/MXNet_Gluon.py)
 
-- Simple Convolutional Neural Network  
+2. Simple Convolutional Neural Network  
 [tf.keras](02_Intermediate/Simple_Convolutional_Neural_Network/tf_keras.py), 
 [tf.nn](02_Intermediate/Simple_Convolutional_Neural_Network/tf_nn.py), 
-[PyTorch](02_Intermediate/Simple_Convolutional_Neural_Network/PyTorch.py) 
+[PyTorch](02_Intermediate/Simple_Convolutional_Neural_Network/PyTorch.py), 
 [MXNet Gluon](02_Intermediate/Simple_Convolutional_Neural_Network/MXNet_Gluon.py)
+
+</details>
 
 ### 03 Advance
 #### Advance Convolutional Neural Network
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. VGGNet  (https://arxiv.org/abs/1409.1556)  
 [tf.keras](03_Advance/CNN/VGGNet/tf_keras.py), 
@@ -135,7 +152,7 @@
 #### Segmentation
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. DeconvNet (http://cvlab.postech.ac.kr/research/deconvnet/)  
 [PyTorch](03_Advance/Segmentation/DeconvNet/PyTorch.py)
@@ -149,7 +166,7 @@
 #### Generative Adversarial Network
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. Vanilla GAN  
 [tf.keras](03_Advance/GAN/Vanilla_GAN/tf_keras.py), 
@@ -171,17 +188,28 @@
 
 ### 04 Extra
 
-#### [Data Loading](04_Extra/DataLoading)
+#### Data Loading
+
+<details>
+<summary> Contents </summary>
+
 [PyTorch](04_Extra/DataLoading/PyTorch)
 
-[TensorFlow]
+[TensorFlow] ( Not Yet )
 
-#### [Transfer Learning]
+</details>
+
+#### Transfer Learning ( Not Yet )
+
+<details>
+<summary> Contents </summary>
+
+</details>
 
 #### Super Resolution
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. SRCNN  
 [TensorFlow](04_Extra/Super_Resolution/EDSR/TensorFlow), 
@@ -204,7 +232,7 @@
 #### Image Translation
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. Neural Style Transfer  
 [PyTorch](04_Extra/Style_Transfer/Neural_Style_Transfer/PyTroch/)
@@ -218,7 +246,7 @@
 #### Attention Module
 
 <details>
-<summary> Implementation list </summary>
+<summary> Contents </summary>
 
 1. [BAM](https://arxiv.org/abs/1807.06514)
 
