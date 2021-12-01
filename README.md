@@ -40,12 +40,15 @@
 ## Example List
 
 ### 01 Basic Usage
-- Linear Regression  
+<details>
+<summary> - Linear Regression </summary>
+
 [tf.keras](01_Basic/Linear_Regression/tf_keras.py),
 [tf.nn](01_Basic/Linear_Regression/tf_nn.py), 
 [PyTorch](01_Basic/Linear_Regression/PyTorch.py), 
 [MXNet Gluon](01_Basic/Linear_Regression/MXNet_Gluon.py)
 [JAX](01_Basic/Linear_Regression/ver_jax.py)
+</details>
 
 - Logistic Regression  
 [tf.keras](01_Basic/Logistic_Regression/tf_keras.py), 
@@ -160,6 +163,8 @@
 [PyTorch](04_Extra/DataLoading/PyTorch)
 
 [TensorFlow]
+
+#### [Transfer Learning]
 
 #### Super Resolution
 1. SRCNN  
