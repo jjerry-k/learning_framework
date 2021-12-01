@@ -40,15 +40,13 @@
 ## Example List
 
 ### 01 Basic Usage
-<details>
-<summary> - Linear Regression </summary>
 
+- Linear Regression  
 [tf.keras](01_Basic/Linear_Regression/tf_keras.py),
 [tf.nn](01_Basic/Linear_Regression/tf_nn.py), 
 [PyTorch](01_Basic/Linear_Regression/PyTorch.py), 
 [MXNet Gluon](01_Basic/Linear_Regression/MXNet_Gluon.py)
 [JAX](01_Basic/Linear_Regression/ver_jax.py)
-</details>
 
 - Logistic Regression  
 [tf.keras](01_Basic/Logistic_Regression/tf_keras.py), 
@@ -71,6 +69,10 @@
 
 ### 03 Advance
 #### Advance Convolutional Neural Network
+
+<details>
+<summary> Implementation list </summary>
+
 1. VGGNet  (https://arxiv.org/abs/1409.1556)  
 [tf.keras](03_Advance/CNN/VGGNet/tf_keras.py), 
 [PyTorch](03_Advance/CNN/VGGNet/PyTorch.py), 
@@ -128,8 +130,13 @@
 [tf.keras](03_Advance/CNN/SENet/tf_keras.py), 
 [PyTorch](03_Advance/CNN/SENet/PyTorch.py)
 
+</details>
 
 #### Segmentation
+
+<details>
+<summary> Implementation list </summary>
+
 1. DeconvNet (http://cvlab.postech.ac.kr/research/deconvnet/)  
 [PyTorch](03_Advance/Segmentation/DeconvNet/PyTorch.py)
 
@@ -137,9 +144,13 @@
 [tf.keras](03_Advance/Segmentation/U-Net/tf_keras.py), 
 [PyTorch](03_Advance/Segmentation/U-Net/PyTorch.py)
 
-
+</details>
 
 #### Generative Adversarial Network
+
+<details>
+<summary> Implementation list </summary>
+
 1. Vanilla GAN  
 [tf.keras](03_Advance/GAN/Vanilla_GAN/tf_keras.py), 
 [PyTorch](03_Advance/GAN/Vanilla_GAN/PyTorch.py)
@@ -156,6 +167,7 @@
 [tf.keras](03_Advance/GAN/CGAN/tf_keras.py),  
 [PyTorch](03_Advance/GAN/CGAN/PyTorch.py)
 
+</details>
 
 ### 04 Extra
 
@@ -167,6 +179,10 @@
 #### [Transfer Learning]
 
 #### Super Resolution
+
+<details>
+<summary> Implementation list </summary>
+
 1. SRCNN  
 [TensorFlow](04_Extra/Super_Resolution/EDSR/TensorFlow), 
 [PyTorch](04_Extra/Super_Resolution/SRCNN/PyTorch)
@@ -183,7 +199,13 @@
 [TensorFlow](04_Extra/Super_Resolution/EDSR/TensorFlow), 
 [PyTorch](04_Extra/Super_Resolution/SubPixel/PyTorch)
 
+</details>
+
 #### Image Translation
+
+<details>
+<summary> Implementation list </summary>
+
 1. Neural Style Transfer  
 [PyTorch](04_Extra/Style_Transfer/Neural_Style_Transfer/PyTroch/)
 
@@ -191,9 +213,16 @@
 
 3. CycleGAN
 
+</details>
+
 #### Attention Module
+
+<details>
+<summary> Implementation list </summary>
 
 1. [BAM](https://arxiv.org/abs/1807.06514)
 
 
 2. [CBAM](https://arxiv.org/abs/1807.06521)
+
+</details>
