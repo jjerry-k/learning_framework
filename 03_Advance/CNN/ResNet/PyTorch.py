@@ -26,7 +26,7 @@ category_list = [i for i in os.listdir(PATH) if os.path.isdir(os.path.join(PATH,
 print(category_list)
 
 num_classes = len(category_list)
-img_size = 150
+img_size = 128
 
 def read_img(path, img_size):
     img = cv.imread(path)
@@ -180,6 +180,7 @@ print("Iteration maker Done !")
 
 # %%
 # Training Network
+
 for epoch in range(epochs):
     net.train()
     avg_loss = 0
@@ -187,6 +188,8 @@ for epoch in range(epochs):
     
     with tqdm(total=len(train_loader)) as t:
         t.set_description(f'[{epoch+1}/{epochs}]')
+        total = 0
+        correct = 0
         for i, (batch_img, batch_lab) in enumerate(train_loader):
             X = batch_img.to(device)
             Y = batch_lab.to(device)
@@ -200,8 +203,14 @@ for epoch in range(epochs):
             loss.backward()
             optimizer.step()
             avg_loss += loss.item()
+
+            _, predicted = torch.max(y_pred.data, 1)
+            total += Y.size(0)
+            correct += (predicted == Y).sum().item()
+            
             t.set_postfix({"loss": f"{loss.item():05.3f}"})
             t.update()
+        acc = (100 * correct / total)
 
     net.eval()
     with tqdm(total=len(val_loader)) as t:
@@ -224,6 +233,6 @@ for epoch in range(epochs):
             val_loss /= total
             val_acc = (100 * correct / total)
             
-    print("Epoch : ", epoch+1, " Loss : ", (avg_loss/len(train_loader)), " Val Loss : ", val_loss.item(), "Val Acc : ", val_acc)
+    print(f"Epoch : {epoch+1}, Loss : {(avg_loss/len(train_loader)):.3f}, Acc: {acc:.3f}, Val Loss : {val_loss.item():.3f}, Val Acc : {val_acc:.3f}")
 
 print("Training Done !")

@@ -1,7 +1,11 @@
 # %%
-import os, torch
+import os
+from tqdm import tqdm
+
 import cv2 as cv
 import numpy as np
+
+import torch
 from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader 
@@ -21,7 +25,7 @@ category_list = [i for i in os.listdir(PATH) if os.path.isdir(os.path.join(PATH,
 print(category_list)
 
 num_classes = len(category_list)
-img_size = 150
+img_size = 128
 
 def read_img(path, img_size):
     img = cv.imread(path)
@@ -163,6 +167,17 @@ class Build_Xception(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = nn.Linear(2048, num_classes)
 
+        self.init_weights(self.stem)
+        self.init_weights(self.entry_block)
+        self.init_weights(self.middle_block)
+        self.init_weights(self.exit_block)
+        self.init_weights(self.classifier)
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(0.01)
+
     def forward(self, x):
         x = self.stem(x)
         x = self.entry_block(x)
@@ -173,9 +188,9 @@ class Build_Xception(nn.Module):
         x = self.classifier(x)
         return x
 
-xception = Build_Xception(input_channel=imgs_tr.shape[-1], num_classes=5).to(device)
+net = Build_Xception(input_channel=imgs_tr.shape[-1], num_classes=5).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(xception.parameters(), lr=0.001)
+optimizer = optim.Adam(net.parameters(), lr=0.001)
 
 # %%
 epochs=100
@@ -203,42 +218,59 @@ print("Iteration maker Done !")
 
 # %%
 # Training Network
+
 for epoch in range(epochs):
+    net.train()
     avg_loss = 0
     avg_acc = 0
-    total_batch = train_dataset.len // batch_size
-    for i, (batch_img, batch_lab) in enumerate(train_loader):
-        X = batch_img.to(device)
-        Y = batch_lab.to(device)
-
-        optimizer.zero_grad()
-
-        y_pred = xception.forward(X)
-
-        loss = criterion(y_pred, Y)
-        
-        loss.backward()
-        optimizer.step()
-        avg_loss += loss.item()
-
-        if (i+1)%20 == 0 :
-            print("Epoch : ", epoch+1, "Iteration : ", i+1, " Loss : ", loss.item())
-
-    with torch.no_grad():
-        val_loss = 0
+    
+    with tqdm(total=len(train_loader)) as t:
+        t.set_description(f'[{epoch+1}/{epochs}]')
         total = 0
         correct = 0
-        for (batch_img, batch_lab) in val_loader:
+        for i, (batch_img, batch_lab) in enumerate(train_loader):
             X = batch_img.to(device)
             Y = batch_lab.to(device)
-            y_pred = xception(X)
-            val_loss += criterion(y_pred, Y)
+
+            optimizer.zero_grad()
+
+            y_pred = net.forward(X)
+
+            loss = criterion(y_pred, Y)
+            
+            loss.backward()
+            optimizer.step()
+            avg_loss += loss.item()
+
             _, predicted = torch.max(y_pred.data, 1)
             total += Y.size(0)
             correct += (predicted == Y).sum().item()
-        val_loss /= total
-        val_acc = (100 * correct / total)
+            
+            t.set_postfix({"loss": f"{loss.item():05.3f}"})
+            t.update()
+        acc = (100 * correct / total)
 
-    print("Epoch : ", epoch+1, " Loss : ", (avg_loss/total_batch), " Val Loss : ", val_loss.item(), "Val Acc : ", val_acc)
+    net.eval()
+    with tqdm(total=len(val_loader)) as t:
+        t.set_description(f'[{epoch+1}/{epochs}]')
+        with torch.no_grad():
+            val_loss = 0
+            total = 0
+            correct = 0
+            for i, (batch_img, batch_lab) in enumerate(val_loader):
+                X = batch_img.to(device)
+                Y = batch_lab.to(device)
+                y_pred = net(X)
+                val_loss += criterion(y_pred, Y)
+                _, predicted = torch.max(y_pred.data, 1)
+                total += Y.size(0)
+                correct += (predicted == Y).sum().item()
+                t.set_postfix({"val_loss": f"{val_loss.item()/(i+1):05.3f}"})
+                t.update()
+
+            val_loss /= total
+            val_acc = (100 * correct / total)
+            
+    print(f"Epoch : {epoch+1}, Loss : {(avg_loss/len(train_loader)):.3f}, Acc: {acc:.3f}, Val Loss : {val_loss.item():.3f}, Val Acc : {val_acc:.3f}")
 
 print("Training Done !")
