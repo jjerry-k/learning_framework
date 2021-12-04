@@ -95,5 +95,3 @@ plt.imshow(cam)
 plt.subplot(1,3,3)
 plt.imshow(overlaped)
 plt.show()
-
-# %%
