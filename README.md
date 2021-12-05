@@ -253,4 +253,7 @@
 
 2. [CBAM](https://arxiv.org/abs/1807.06521)
 
+
+3. [Transformer](https://arxiv.org/abs/1706.03762)
+
 </details>

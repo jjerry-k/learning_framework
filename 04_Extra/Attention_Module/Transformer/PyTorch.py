@@ -9,7 +9,7 @@ from torch.nn import functional as F
 # -> Patch Embedding + Position Embedding + cls embedding 
 # -> Transformer Encoder x L -> MLP -> Classification
 # %%
-class ScaledDotProductAttention(nn.Module):
+class ScaledDotProductAttention(nn.Modulesd):
     # (B, D, D) -> (B, D, D_v)
     # q, k, v: 3 dim
     # q shape == k shape (B, D1, D_k)
