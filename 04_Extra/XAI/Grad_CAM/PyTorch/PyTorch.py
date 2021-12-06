@@ -54,7 +54,7 @@ transform = transforms.Compose([transforms.Resize((224, 224)),
                                 transforms.ToTensor(),
                                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
-raw_img = Image.open("./cat_dog.jpg")
+raw_img = Image.open("../cat_dog.jpg")
 img = transform(raw_img).unsqueeze(0)
 
 pred = net(img)
@@ -81,7 +81,7 @@ heatmap /= np.max(heatmap)
 # TDL
 # Colormap draw
 import cv2
-img = cv2.imread('./cat_dog.jpg')
+img = cv2.imread('../cat_dog.jpg')
 heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
 heatmap = np.uint8(255 * heatmap)
 heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
