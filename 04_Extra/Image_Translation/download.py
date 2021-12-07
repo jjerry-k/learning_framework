@@ -14,6 +14,7 @@ def main(args):
     datatype = args.datatype
     dataset = args.dataset
     SAVE_PATH = "./datasets"
+    os.makedirs(SAVE_PATH, exist_ok=True)
     if datatype == 'paired':
         URL = f"http://efrosgans.eecs.berkeley.edu/pix2pix/datasets/{dataset}.tar.gz"
     else : 

@@ -8,12 +8,12 @@ class Encoding_Block(nn.Module):
         
         layer_list = []
         if use_act:
-            layer_list.append(nn.LeakyReLU(0.2, inplace=True))
+            layer_list.append(nn.LeakyReLU(0.2))
         layer_list.append(nn.Conv2d(in_channel, output_channel, ksize, strides, padding))
         if use_bn:
             layer_list.append(nn.BatchNorm2d(output_channel))
         
-        self.module = nn.Sequetial(*layer_list)
+        self.module = nn.Sequential(*layer_list)
 
     def forward(self, x):
         return self.module(x)
@@ -23,7 +23,7 @@ class Decoding_Block(nn.Module):
         super(Decoding_Block, self).__init__()
 
         layer_list = []
-        layer_list.append(nn.ReLU(inplace=True))
+        layer_list.append(nn.ReLU())
         layer_list.append(nn.ConvTranspose2d(in_channel, output_channel, ksize, strides, padding))
         if use_bn:
             layer_list.append(nn.BatchNorm2d(output_channel))
@@ -52,7 +52,8 @@ class Generator_Encoder_Decoder(nn.Module):
             layer_list.append(nn.Dropout(0.5))
 
         for i in range(4):
-            output_channel = prev_features // (2**(i+1))
+            sub = 1 if i==0 else 2
+            output_channel = prev_features // sub
             layer_list.append(Decoding_Block(prev_features, output_channel))
             prev_features = output_channel
 
@@ -128,9 +129,9 @@ class Encoding_Block_Dis(nn.Module):
         if use_bn:
             layer_list.append(nn.BatchNorm2d(output_channel))
         if use_act:
-            layer_list.append(nn.LeakyReLU(0.2, inplace=True))
+            layer_list.append(nn.LeakyReLU(0.2))
         
-        self.module = nn.Sequetial(*layer_list)
+        self.module = nn.Sequential(*layer_list)
 
     def forward(self, x):
         return self.module(x)
@@ -142,9 +143,9 @@ class Discriminator(nn.Module):
         layer_list = []
 
         if n_layers == 0:
-            layer_list.append(Encoding_Block_Dis(A_channel+B_channel, num_features, ksize=1, strides=1, use_bn=False))
-            layer_list.append(Encoding_Block_Dis(num_features, num_features*2, ksize=1, strides=1, use_bn=False))
-            layer_list.append(Encoding_Block_Dis(num_features*2, 1, ksize=1, strides=1, use_act=False, use_bn=False))
+            layer_list.append(Encoding_Block_Dis(A_channel+B_channel, num_features, ksize=1, strides=1, padding=0, use_bn=False))
+            layer_list.append(Encoding_Block_Dis(num_features, num_features*2, ksize=1, strides=1, padding=0, use_bn=False))
+            layer_list.append(Encoding_Block_Dis(num_features*2, 1, ksize=1, strides=1, padding=0, use_act=False, use_bn=False))
             layer_list.append(nn.Sigmoid())
         
         else:
