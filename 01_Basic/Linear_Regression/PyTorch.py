@@ -1,23 +1,21 @@
 import torch
 from torch import nn
 from torch import optim
-from torch.autograd import Variable
 import numpy as np
-from matplotlib import pyplot as plt
+
+W = 0.1
+B = 0.3
 
 x = np.random.normal(0.0, 0.55, (10000, 1))
-y = x * 0.1 + 0.3 + np.random.normal(0.0, 0.03, (10000,1))
-                     
-#plt.plot(x, y, 'r.')
-#plt.show()
+y = x * W + B + np.random.normal(0.0, 0.03, (10000,1))
 
-x_data = Variable(torch.Tensor(x))
-y_data = Variable(torch.Tensor(y))
+x_data = torch.Tensor(x)
+y_data = torch.Tensor(y)
 
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.linear = nn.Linear(1,1)
+        self.linear = nn.Linear(1, 1)
 
     def forward(self, X):
         X = self.linear(X)
@@ -33,28 +31,20 @@ for epoch in range(500):
 
     loss = criterion(y_pred, y_data)
     
-    
-    if epoch ==0 :
-        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
-        #y_dis = model.forward(x_data).data.numpy()
-        #plt.plot(x, y, 'r.')
-        #plt.plot(x, y_dis, 'b.')
-        #plt.show()
-        
-    elif (epoch+1) % 100 == 0 :
-        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
-        #y_dis = model.forward(x_data).data.numpy()
-        #plt.plot(x, y, 'r.')
-        #plt.plot(x, y_dis, 'b.')
-        #plt.show()
-        
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
 
+    if epoch ==0 :
+        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
+    
+    elif (epoch+1) % 100 == 0 :
+        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
+        
 # After Training, check parameters
 param = list(model.parameters())
-print(len(param))
-print(param[0].data.numpy())
-print(param[1].data.numpy())
+print(f"Real W: {W}, Predict W: {param[0].item()}")
+print(f"Real B: {B}, Predict B: {param[1].item()}")
+# print(param[0].data.numpy())
+# print(param[1].data.numpy())
