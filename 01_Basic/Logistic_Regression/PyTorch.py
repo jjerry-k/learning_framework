@@ -15,6 +15,12 @@ mnist_train = datasets.MNIST(root="../../data",
                             download=True)
 print("Downloading Train Data Done ! ")
 
+mnist_test = datasets.MNIST(root="../../data",
+                            train=False,
+                            transform=transforms.ToTensor(),
+                            download=True)
+print("Downloading Test Data Done ! ")
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # our model
