@@ -1,12 +1,16 @@
+# Importing Modules
 import numpy as np
 from tqdm import tqdm
 
 import torch
-import torch.nn.functional as F
-from torch import nn, optim
-from torch.utils.data import Dataset, DataLoader 
+from torch import nn
+from torch import optim
+from torch.utils.data import DataLoader 
 
-from torchvision import transforms, datasets, utils
+from torchvision import datasets
+from torchvision import transforms
+import numpy as np
+from matplotlib import pyplot as plt
 
 # Device Configuration
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -24,7 +28,12 @@ mnist_test = datasets.MNIST(root='../../data/',
                          download=True)
 print("Downloading Test Data Done ! ")
 
-# our model
+batch_size = 256
+
+train_loader = DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=2)
+val_loader = DataLoader(mnist_test, batch_size=batch_size, shuffle=False, num_workers=2)
+
+# Defining Model
 class Model(nn.Module):
     
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -47,14 +56,7 @@ model = Model(28, 128, 2, 10).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-epochs = 10
-batch_size = 256
-
-train_loader = DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=2)
-val_loader = DataLoader(mnist_test, batch_size=batch_size, shuffle=False, num_workers=2)
-
-
-print("Iteration maker Done !")
+epochs = 5
 
 # Training
 for epoch in range(epochs):
@@ -106,7 +108,7 @@ for epoch in range(epochs):
                 t.set_postfix({"val_loss": f"{val_loss.item()/(i+1):05.3f}"})
                 t.update()
 
-            val_loss /= total
+            val_loss /= len(val_loader)
             val_acc = (100 * correct / total)
             
     print(f"Epoch : {epoch+1}, Loss : {(avg_loss/len(train_loader)):.3f}, Acc: {acc:.3f}, Val Loss : {val_loss.item():.3f}, Val Acc : {val_acc:.3f}\n")
