@@ -1,35 +1,58 @@
-import os
+# Importing Modules
+import random
 from tqdm import tqdm
 
-import cv2 as cv
 import numpy as np
 
 import torch
-from torch import nn, optim
-from torch.nn import functional as F
-from torch.utils.data import Dataset, DataLoader 
-from torchvision import transforms, datasets, utils
+from torch import nn
+from torch import optim
+from torch.utils.data import DataLoader 
+
+from torchvision import datasets
+from torchvision import transforms
+
+from matplotlib import pyplot as plt
 
 # Device Configuration
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+# Set randomness
+seed = 777
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed) # if use multi-GPU
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+# Set hyperparameter
+epochs= 10
+batch_size= 256
+
 # MNIST dataset
-train_dataset = datasets.MNIST(root='../../../data/',
-                          train=True,
-                          transform=transforms.ToTensor(),
-                          download=True)
+mnist_train = datasets.MNIST(root='../../../data/',
+                            train=True,
+                            transform=transforms.ToTensor(),
+                            download=True)
 print("Downloading Train Data Done ! ")
 
-val_dataset = datasets.MNIST(root='../../../data/',
-                         train=False,
-                         transform=transforms.ToTensor(),
-                         download=True)
+mnist_test = datasets.MNIST(root='../../../data/',
+                            train=False,
+                            transform=transforms.ToTensor(),
+                            download=True)
 print("Downloading Test Data Done ! ")
 
-# Build network
-class build_AE(nn.Module):
+train_loader = DataLoader(mnist_train, batch_size=batch_size, shuffle=True, num_workers=2)
+val_loader = DataLoader(mnist_test, batch_size=batch_size, shuffle=False, num_workers=2)
+
+# Defining Model
+class BuildAE(nn.Module):
     def __init__(self, input_features=784):
-        super(build_AE, self).__init__()
+        super(BuildAE, self).__init__()
 
         self.encoder = nn.Sequential(
             nn.Linear(input_features, 64),
@@ -58,22 +81,12 @@ class build_AE(nn.Module):
         decoded = self.decoder(encoded)
         return decoded
 
-net = build_AE(input_features=784).to(device)
+model = BuildAE(input_features=784).to(device)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(net.parameters(), lr = 0.0001)
-
-epochs=10
-batch_size=256
-
-train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, num_workers=2)
-
-print("Iteration maker Done !")
-
-# Training Network
+optimizer = optim.Adam(model.parameters(), lr = 0.0001)
 
 for epoch in range(epochs):
-    net.train()
+    model.train()
     avg_loss = 0
     
     with tqdm(total=len(train_loader)) as t:
@@ -83,7 +96,7 @@ for epoch in range(epochs):
             X = batch_img.to(device).view(batch_img.shape[0], -1)
             
             optimizer.zero_grad()
-            y_pred = net.forward(X)
+            y_pred = model.forward(X)
             loss = criterion(y_pred, X)
             
             loss.backward()
@@ -93,7 +106,7 @@ for epoch in range(epochs):
             t.set_postfix({"loss": f"{loss.item():05.3f}"})
             t.update()
 
-    net.eval()
+    model.eval()
     with tqdm(total=len(val_loader)) as t:
         t.set_description(f'[{epoch+1}/{epochs}]')
         with torch.no_grad():
@@ -102,7 +115,7 @@ for epoch in range(epochs):
                 
                 X = batch_img.to(device).view(batch_img.shape[0], -1)
                 
-                y_pred = net(X)
+                y_pred = model(X)
                 val_loss += criterion(y_pred, X)
                 t.set_postfix({"val_loss": f"{val_loss.item()/(i+1):05.3f}"})
                 t.update()
