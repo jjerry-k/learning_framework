@@ -26,7 +26,26 @@ os.makedirs(SAVE_PATH, exist_ok=True)
 data = utils.download(URL, SAVE_PATH)
 PATH = os.path.join(SAVE_PATH, "flower_photos")
 with tarfile.open(os.path.join(SAVE_PATH, file_name)) as tf:
-    tf.extractall(SAVE_PATH)
+    def is_within_directory(directory, target):
+        
+        abs_directory = os.path.abspath(directory)
+        abs_target = os.path.abspath(target)
+    
+        prefix = os.path.commonprefix([abs_directory, abs_target])
+        
+        return prefix == abs_directory
+    
+    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    
+        for member in tar.getmembers():
+            member_path = os.path.join(path, member.name)
+            if not is_within_directory(path, member_path):
+                raise Exception("Attempted Path Traversal in Tar File")
+    
+        tar.extractall(path, members, numeric_owner=numeric_owner) 
+        
+    
+    safe_extract(tf, SAVE_PATH)
     
 category_list = [i for i in os.listdir(PATH) if os.path.isdir(os.path.join(PATH, i)) ]
 print(category_list, '\n')
