@@ -4,14 +4,14 @@
 
 - 본 Repository 는 지극히 개인적인 공부용이라 모든 코드들이 불친절하고 가독성이 좋지 않습니다.
 - 대부분 Network만 구성해볼뿐 학습을 해보진 않습니다. (물론 추후에 학습도 해볼 예정)
-- 현재 버전
-    - TensorFlow: ~~2.3.1~~ -> 2.7
-    - PyTorch: ~~1.6~~ -> 1.10
-    - MXNet: 1.5
 
 ---
 ## Framework list 
-- PyTorch, TensorFlow, MXNet, JAX
+- PyTorch: 2.2
+- TensorFlow: 2.16
+- MXNet: 1.9
+- JAX: 0.4.26
+- MLX: 0.9.1
 
 <details>
 <summary> Additional information </summary>
@@ -26,7 +26,6 @@
 - 공식 홈페이지 : https://www.tensorflow.org
 - 서브 프레임워크
 - Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
-- 1.x -> 2.x 로 변경중.
 
 ### MXNet
 - 배포 : Apache
@@ -34,12 +33,18 @@
 - 그냥...써보려고 함....
 - Gluon, Module 로 작성하려함.
 - 매우...진행이 느릴 것으로 예상.
+- [프로젝트 중단](https://attic.apache.org/projects/mxnet.html)
 
 ### JAX
-- 배포 :  Google
+- 배포 : Google
 - 공식 홈페이지 : https://github.com/google/jax
 - 그냥....써보려고....
 - Transformer가 jax 기반이길래...
+
+### MLX
+- 배포 : Apple
+- 공식 홈페이지 : https://github.com/ml-explore/mlx
+- 맥북에서 공부하기 위한...방법!
 
 </details>
 
