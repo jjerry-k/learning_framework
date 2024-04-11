@@ -9,7 +9,7 @@
 ## Framework list 
 - PyTorch: 2.2
 - TensorFlow: 2.16
-- MXNet: 1.9
+- ~~MXNet: 1.9~~ -> 폐기
 - JAX: 0.4.26
 - MLX: 0.9.1
 
@@ -25,14 +25,14 @@
 - 배포 : Google
 - 공식 홈페이지 : https://www.tensorflow.org
 - 서브 프레임워크
-- Low level(tf.nn), High level(tf.keras), model subclassing API 로 작성하려함.
+- ~~Low level(tf.nn),~~ High level(tf.keras), model subclassing API 로 작성하려함.
 
-### MXNet
-- 배포 : Apache
-- 공식 홈페이지 : https://mxnet.apache.org
-- 그냥...써보려고 함....
-- Gluon, Module 로 작성하려함.
-- 매우...진행이 느릴 것으로 예상.
+### ~~MXNet~~
+- ~~배포 : Apache~~
+- ~~공식 홈페이지 : https://mxnet.apache.org~~
+- ~~그냥...써보려고 함....~~
+- ~~Gluon, Module 로 작성하려함.~~
+- ~~매우...진행이 느릴 것으로 예상.~~
 - [프로젝트 중단](https://attic.apache.org/projects/mxnet.html)
 
 ### JAX
@@ -47,6 +47,15 @@
 - 맥북에서 공부하기 위한...방법!
 
 </details>
+
+## Requirement
+
+``` bash
+# 공통 설치 패키지
+pip install numpy matplotlib scikit-learn Pillow opencv-python tqdm
+
+# 필요에 따라 원하는 Deep Learning 프레임워크 설치
+```
 
 ## Example List
 
