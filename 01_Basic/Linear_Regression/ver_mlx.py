@@ -3,6 +3,9 @@ from mlx import core as mx
 from mlx import optimizers as optim
 import numpy as np
 
+EPOCHS = 500
+LEARNING_RATE = 0.05
+
 W = 0.1
 B = 0.3
 
@@ -29,20 +32,17 @@ def eval_fn(model, X, y):
 
 model  = Model()
 
-num_epochs = 500
-learning_rate = 0.05
-
 loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
-optimizer = optim.SGD(learning_rate=learning_rate)
+optimizer = optim.SGD(learning_rate=LEARNING_RATE)
 
-for epoch in range(num_epochs):
+for epoch in range(EPOCHS):
     loss, grads = loss_and_grad_fn(model, x_mx_arr, y_mx_arr)
     optimizer.update(model, grads)
     mx.eval(model.parameters(), optimizer.state)
     accuracy = eval_fn(model, x_mx_arr, y_mx_arr)
     if (epoch == 0) or ((epoch+1) % 100 == 0):
-        print(f"Epoch {epoch}: Loss: {loss.item():.3f}")
+        print(f"Epoch: {epoch+1}: Loss: {loss.item()}")
         
 param = (model.linear.weight, model.linear.bias)
-print(f"Real W: {W}, Predict W: {param[0].item():}")
-print(f"Real B: {B}, Predict B: {param[1].item()}")
+print(f"Real W: {W}, Predict W: {param[0].item():.3f}")
+print(f"Real B: {B}, Predict B: {param[1].item():.3f}")

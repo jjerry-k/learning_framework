@@ -3,6 +3,9 @@ from torch import nn
 from torch import optim
 import numpy as np
 
+EPOCHS = 500
+LEARNING_RATE = 0.05
+
 W = 0.1
 B = 0.3
 
@@ -23,10 +26,10 @@ class Model(nn.Module):
 
 model = Model()
 criterion  = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=0.05)
+optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
 # Training loop
-for epoch in range(500):
+for epoch in range(EPOCHS):
     y_pred = model.forward(x_data)
 
     loss = criterion(y_pred, y_data)
@@ -36,15 +39,10 @@ for epoch in range(500):
     loss.backward()
     optimizer.step()
 
-    if epoch ==0 :
-        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
-    
-    elif (epoch+1) % 100 == 0 :
-        print("Epoch : ", epoch+1, " Loss : ", loss.data.numpy())
+    if (epoch == 0) or ((epoch+1) % 100 == 0):
+        print(f"Epoch: {epoch+1} Loss: {loss.data.numpy()}")
         
 # After Training, check parameters
 param = list(model.parameters())
-print(f"Real W: {W}, Predict W: {param[0].item()}")
-print(f"Real B: {B}, Predict B: {param[1].item()}")
-# print(param[0].data.numpy())
-# print(param[1].data.numpy())
+print(f"Real W: {W}, Predict W: {param[0].item():.3f}")
+print(f"Real B: {B}, Predict B: {param[1].item():.3f}")
