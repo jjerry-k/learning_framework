@@ -9,9 +9,10 @@ from tensorflow.keras import models, layers, optimizers, losses, metrics, utils,
 tf.random.set_seed(777)
 
 print("Packge Loaded!")
-# %%
-EPOCHS = 500
-BATCH_SIZE = 128
+
+EPOCHS = 10
+BATCH_SIZE = 100
+LEARNING_RATE = 0.01
 
 # Data Loading
 (train_x, train_y), (test_x, test_y) = datasets.mnist.load_data()
@@ -38,7 +39,7 @@ print("Data Prepared!")
 class LogisticRegression(models.Model):
     def __init__(self):
         super(LogisticRegression, self).__init__()
-        self.d = layers.Dense(1, input_shape=(784, ), activation='sigmoid')
+        self.d = layers.Dense(1, activation='sigmoid')
 
     def call(self, x):
         return self.d(x)
@@ -48,24 +49,24 @@ model = LogisticRegression()
 
 loss_object = losses.BinaryCrossentropy()
 metric = metrics.Accuracy()
-optimizer = optimizers.Adam()
+optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
 
 # %%
 for epoch in range(EPOCHS):
-    epoch_loss, val_loss, val_acc = 0, 0, 0
-    for batch_x, batch_y in train_ds:
+    avg_loss, val_loss, val_acc = 0, 0, 0
+    for i, (batch_x, batch_y) in enumerate(train_ds):
         with tf.GradientTape() as tape:
             predictions = model(batch_x, training=True)
             loss = loss_object(batch_y, predictions)
             gradients = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        epoch_loss += loss
-
+        avg_loss += loss
+        if (i+1)%100 == 0 :
+                print("Epoch : ", epoch+1, "Iteration : ", i+1, " Loss : ", avg_loss.numpy().item()/(i+1))
 
     for batch_x, batch_y in test_ds:
         predictions = model(batch_x, training=False)
         val_loss += loss_object(batch_y, predictions)
         val_acc += metric(batch_y, tf.greater_equal(predictions, 0.5))
 
-    print("{:5} | {:10.6f} | {:10.6f} | {:10.2f}".format(epoch+1, loss/(len(train_x)/BATCH_SIZE), \
-                                                            val_loss/(len(test_x)/BATCH_SIZE), val_acc/(len(test_x)/BATCH_SIZE)))
+    print("Epoch : ", epoch+1, " Loss : ", avg_loss.numpy().item()/(i+1))

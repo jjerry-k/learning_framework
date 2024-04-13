@@ -10,6 +10,9 @@ tf.random.set_seed(777)
 
 print("Packge Loaded!")
 
+EPOCHS = 10
+BATCH_SIZE = 100
+LEARNING_RATE = 0.01
 
 # Data Loading
 (train_x, train_y), (test_x, test_y) = datasets.mnist.load_data()
@@ -35,12 +38,6 @@ mlp.add(layers.Dense(1, activation='sigmoid'))
 
 print("Network Built!")
 
-mlp.compile(optimizer=optimizers.Adam(), loss=losses.binary_crossentropy, metrics=['accuracy'])
+mlp.compile(optimizer=optimizers.Adam(learning_rate=LEARNING_RATE), loss=losses.binary_crossentropy, metrics=['accuracy'])
 
-history = mlp.fit(train_x, train_y, epochs=10, batch_size=16, validation_data=(test_x, test_y))
-
-plt.plot(history.history['loss'], '.-')
-plt.plot(history.history['val_loss'], '.-')
-plt.legend(['train_loss', 'val_loss'], loc=0)
-plt.show()
-
+history = mlp.fit(train_x, train_y, epochs=EPOCHS, batch_size=BATCH_SIZE, validation_data=(test_x, test_y))

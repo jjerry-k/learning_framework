@@ -8,6 +8,10 @@ from torchvision import transforms
 
 import numpy as np
 
+EPOCHS = 10
+BATCH_SIZE = 100
+LEARNING_RATE = 0.01
+
 # MNIST dataset
 mnist_train = datasets.MNIST(root="../../data",
                             train=True,
@@ -36,15 +40,13 @@ class Model(nn.Module):
 model = Model().to(device)
 
 criterion  = nn.BCEWithLogitsLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
-batch_size = 100
+data_iter = DataLoader(mnist_train, batch_size=BATCH_SIZE, shuffle=True)
 
-data_iter = DataLoader(mnist_train, batch_size=100, shuffle=True)
-
-for epoch in range(10):
+for epoch in range(EPOCHS):
     avg_loss = 0
-    total_batch = len(mnist_train)//batch_size
+    total_batch = len(mnist_train)//BATCH_SIZE
     for i, (batch_img, batch_lab) in enumerate(data_iter):
 
         # 0 : digit < 5
