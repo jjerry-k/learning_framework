@@ -16,7 +16,7 @@ from torchvision import transforms
 from matplotlib import pyplot as plt
 
 # Device Configuration
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
 
 # Set randomness
 seed = 777
@@ -45,7 +45,6 @@ class FlowerDataset(Dataset):
             if not len(files): continue
             files = [os.path.join(root, file) for file in files if file.split(".")[-1] in IMG_FORMAT]
             self.filelist += files
-        # self.filelist = self.filelist[:64]
         self.transform = transform
 
     def __len__(self):
@@ -66,8 +65,8 @@ transform = transforms.Compose([
 train_dataset = FlowerDataset(os.path.join("../../../data/flower_photos/train"), transform)
 val_dataset = FlowerDataset(os.path.join("../../../data/flower_photos/validation"), transform)
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # Defining Model
 class build_vgg(nn.Module):
