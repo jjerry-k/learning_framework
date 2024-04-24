@@ -12,7 +12,7 @@ np.random.seed(777)
 mx.random.seed(777)
 
 
-EPOCHS = 50
+EPOCHS = 5
 BATCH_SIZE = 16
 IMG_SIZE = 192
 LEARNING_RATE = 1e-4
@@ -45,70 +45,89 @@ len_train_loader = int(np.ceil(len(train_dataset)/BATCH_SIZE))
 len_val_loader = int(np.ceil(len(val_dataset)/BATCH_SIZE))
 
 # Defining Model
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channel, output_channel, strides=1, use_branch=True):
+class DenseLayer(nn.Module):
+    def __init__(self, input_feature, growth_rate):
         super().__init__()
-
-        self.branch1 = lambda x: x
-        if use_branch:
-            self.branch1 = nn.Conv2d(in_channel, output_channel, 1, strides)
-        
-        self.branch2 = nn.Sequential(
-            nn.Conv2d(in_channel, output_channel//4, 1, strides),
-            nn.BatchNorm(output_channel//4),
+        self.block = nn.Sequential(
+            nn.BatchNorm(input_feature),
             nn.ReLU(),
-            nn.Conv2d(output_channel//4, output_channel//4, 3, 1, padding=1),
-            nn.BatchNorm(output_channel//4),
+            nn.Conv2d(input_feature, growth_rate * 4, 1),
+            nn.BatchNorm(growth_rate * 4),
             nn.ReLU(),
-            nn.Conv2d(output_channel//4, output_channel, 1, 1),
-            nn.BatchNorm(output_channel),        
+            nn.Conv2d(growth_rate * 4, growth_rate, 3, padding=1)
         )
 
-        self.relu = nn.ReLU()
+    def __call__(self, x):
+        new_features = self.block(x)
+        return mx.concatenate([x, new_features], axis=-1)
+
+class DenseBlock(nn.Module):
+    def __init__(self, num_layers, input_feature, growth_rate):
+        super().__init__()
+
+        layer_list = []
+        for i in range(num_layers):
+            layer_list.append(DenseLayer(input_feature + (i * growth_rate), growth_rate))
+
+        self.block = nn.Sequential(*layer_list)
 
     def __call__(self, x):
-        out = self.branch2(x)
-        out = self.relu(out + self.branch1(x))
-
-        return out
-    
-class Model(nn.Module):
-    def __init__(self, input_channel= 3, num_classes=1000, num_layer=16):
+        return self.block(x)
+            
+class Transitionlayer(nn.Module):
+    def __init__(self, input_feature, reduction):
         super().__init__()
-        
+
+        self.block = nn.Sequential(
+            nn.BatchNorm(input_feature), 
+            nn.ReLU(),
+            nn.Conv2d(input_feature, int(input_feature * reduction), kernel_size=1),
+            nn.AvgPool2d(2, 2)
+        )
+
+    def __call__(self, x):
+        return self.block(x)
+
+class Model(nn.Module):
+    def __init__(self, input_channel=3, num_classes=1000, num_blocks=121, growth_rate=32):
+        super().__init__()
+
         blocks_dict = {
-        50: [3, 4, 6, 3],
-        101: [3, 4, 23, 3], 
-        152: [3, 8, 36, 3]
-        }
+        121: [6, 12, 24, 16],
+        169: [6, 12, 32, 32], 
+        201: [6, 12, 48, 32], 
+        264: [6, 12, 64, 48]
+    }
 
-        num_channel_list = [256, 512, 1024, 2048]
+        assert num_blocks in  blocks_dict.keys(), "Number of layer must be in %s"%blocks_dict.keys()
 
-        assert num_layer in  blocks_dict.keys(), "Number of layer must be in %s"%blocks_dict.keys()
-
-        self.stem = nn.Sequential(
+        self.Stem = nn.Sequential(
             nn.Conv2d(input_channel, 64, 7, 2, 3),
             nn.BatchNorm(64),
             nn.ReLU(),
             nn.MaxPool2d(3, 2, 1)
         )
-
+        
         layer_list = []
+        num_features = 64
+        
+        for idx, layers in enumerate(blocks_dict[num_blocks]):
+            layer_list.append(DenseBlock(layers, num_features, growth_rate))
+            num_features = num_features + (layers * growth_rate)
+            if idx != 3:
+                layer_list.append(Transitionlayer(num_features, 0.5))
+                num_features = int(num_features * 0.5)
 
-        input_features = 64
+        self.Main_Block = nn.Sequential(*layer_list)
 
-        for idx, num_iter in enumerate(blocks_dict[num_layer]):
-            for j in range(num_iter):
-                if j==0:
-                    layer_list.append(ResidualBlock(input_features, num_channel_list[idx], strides=2))
-                else:
-                    layer_list.append(ResidualBlock(input_features, num_channel_list[idx], use_branch=False))
-                input_features = num_channel_list[idx]
-        self.main_net = nn.Sequential(*layer_list)
-        self.classifier = nn.Linear(input_features, num_classes)
+        self.Block = nn.Sequential(
+            nn.BatchNorm(num_features),
+            nn.ReLU()
+        )
+        self.Classifier = nn.Linear(num_features, num_classes)
     
         self.init_weights()
-    
+
     def init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -120,10 +139,11 @@ class Model(nn.Module):
                 nn.init.constant(m.bias, 0)
                 
     def __call__(self, x):
-        x = self.stem(x)
-        x = self.main_net(x)
+        x = self.Stem(x)
+        x = self.Main_Block(x)
         x = mx.mean(x, axis=[1, 2]).reshape(x.shape[0], -1)
-        x = self.classifier(x)
+        x = self.Block(x)
+        x = self.Classifier(x)
         return x
 
 def loss_fn(model, x, y):
@@ -135,14 +155,13 @@ def eval_fn(model, x, y):
     metric = mx.mean(mx.argmax(model(x), axis=1) == y)
     return loss, metric
 
-model  = Model(input_channel=3, num_classes=5, num_layer=50)
+model  = Model(input_channel=3, num_classes=5, num_blocks=121, growth_rate=32)
 mx.eval(model.parameters())
 
 loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
-optimizer = optim.SGD(learning_rate=LEARNING_RATE, momentum=0.99)
-
+optimizer = optim.Adam(learning_rate=LEARNING_RATE)
+# %%
 for epoch in range(EPOCHS):
-    model.train()
     train_loss = 0
     with tqdm(enumerate(train_loader), total=len_train_loader) as pbar:
         pbar.set_description(f"{epoch+1}/{EPOCHS}")
@@ -156,7 +175,6 @@ for epoch in range(EPOCHS):
             pbar.set_postfix(loss=f"{train_loss/(i+1):.3f}")
     val_loss = 0
     val_acc = 0
-    model.eval()
     with tqdm(enumerate(val_loader), total=len_val_loader) as pbar:
         pbar.set_description(f"{epoch+1}/{EPOCHS}")
         for i, (batch) in pbar:
